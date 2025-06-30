@@ -24,5 +24,26 @@ class TestSimulationAPI(unittest.TestCase):
         self.assertIn('prices', data['results'][good])
         self.assertIn('volumes', data['results'][good])
 
+    def test_step_and_reset(self):
+        # Reset to ensure clean state
+        resp = self.client.post('/reset', json={'num_agents': 2})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        data = resp.get_json()
+        self.assertEqual(data['days'], 0)
+
+        # Step one day
+        resp = self.client.post('/step', json={'days': 1})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        data = resp.get_json()
+        self.assertEqual(data['days'], 1)
+
+        # Step another day and ensure day counter increases
+        resp = self.client.post('/step', json={'days': 1})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertEqual(data['days'], 2)
+
 if __name__ == '__main__':
     unittest.main()

@@ -142,7 +142,7 @@ class SQLiteHistory(MarketHistory):
             self._history[good] = []
             cur = self._conn.execute(
                 "SELECT volume, low, high, mean, supply, demand FROM trades WHERE good=? ORDER BY day",
-                (good,),
+                (str(good),),
             )
             for r in cur.fetchall():
                 self._history[good].append(Trades(*r))
@@ -157,7 +157,7 @@ class SQLiteHistory(MarketHistory):
                 "INSERT INTO trades(day, good, volume, low, high, mean, supply, demand) VALUES (?,?,?,?,?,?,?,?)",
                 (
                     day,
-                    good,
+                    str(good),
                     trades.volume,
                     trades.low,
                     trades.high,

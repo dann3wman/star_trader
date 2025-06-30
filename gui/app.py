@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+import os
 
 # Ensure the project root is on the Python path when running this module
 # directly (e.g. `python gui/app.py`). This allows imports like
@@ -12,7 +13,13 @@ if __package__ is None:  # pragma: no cover - executed only when run directly
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-from economy import Market
+from economy import Market, SQLiteHistory
+
+# Persistent simulation support
+DB_PATH = os.environ.get("STAR_TRADER_DB", "sim.db")
+_history = SQLiteHistory(DB_PATH)
+_persistent_market = Market(num_agents=9, history=_history)
+
 
 app = Flask(__name__)
 
@@ -53,6 +60,78 @@ def index():
             return jsonify({'days': days, 'results': results, 'agents': agent_stats})
         return render_template('results.html', results=results, days=days, agents=agent_stats)
     return render_template('index.html')
+
+
+def _compile_results(market):
+    """Helper to build the results dict for templates/JSON."""
+    days = market._history.day_number
+    hist = market.history(days)
+    results = {}
+    for good in hist:
+        low, high, current, ratio = market.aggregate(good, days)
+        prices = [trade.mean for trade in hist[good]]
+        volumes = [trade.volume for trade in hist[good]]
+        results[str(good)] = {
+            'low': low,
+            'high': high,
+            'current': current,
+            'ratio': ratio,
+            'prices': prices,
+            'volumes': volumes,
+        }
+
+    agent_stats = market.agent_stats()
+    for agent in agent_stats:
+        agent['trades'] = {str(k): v for k, v in agent['trades'].items()}
+    return {'days': days, 'results': results, 'agents': agent_stats}
+
+
+@app.route('/step', methods=['POST'])
+def step():
+    """Advance the persistent simulation by N days."""
+    if request.is_json:
+        data = request.get_json()
+        days = int(data.get('days', 1))
+    else:
+        days = int(request.form.get('days', 1))
+    global _persistent_market
+    _persistent_market.simulate(days)
+    data = _compile_results(_persistent_market)
+    if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+        return jsonify(data)
+    return render_template('results.html', **data)
+
+
+@app.route('/reset', methods=['POST'])
+def reset():
+    """Reset the persistent simulation state."""
+    if request.is_json:
+        data = request.get_json()
+        num_agents = int(data.get('num_agents', 9))
+    else:
+        num_agents = int(request.form.get('num_agents', 9))
+    global _history, _persistent_market
+    _history.reset()
+    _persistent_market = Market(num_agents=num_agents, history=_history)
+    data = _compile_results(_persistent_market)
+    if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+        return jsonify(data)
+    return render_template('results.html', **data)
+
+
+@app.route('/load', methods=['GET'])
+def load():
+    """Load an existing simulation database."""
+    global _history, _persistent_market, DB_PATH
+    db = request.args.get('db', DB_PATH)
+    num_agents = int(request.args.get('num_agents', 9))
+    DB_PATH = db
+    _history = SQLiteHistory(DB_PATH)
+    _persistent_market = Market(num_agents=num_agents, history=_history)
+    data = _compile_results(_persistent_market)
+    if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+        return jsonify(data)
+    return render_template('results.html', **data)
 
 if __name__ == '__main__':
     app.run(debug=True)

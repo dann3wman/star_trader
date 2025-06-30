@@ -97,6 +97,15 @@
         {% endif %}
       {% endfor %}
     </table>
+    <h2>Simulation Controls</h2>
+    <form action="/step" method="post">
+      <label for="cont_days">Days to Step:</label>
+      <input type="number" id="cont_days" name="days" value="1" min="1" class="input-number">
+      <input type="submit" value="Step" class="button">
+    </form>
+    <form action="/reset" method="post">
+      <input type="submit" value="Reset" class="button alert">
+    </form>
     <p><a href="/">Run another simulation</a></p>
     <script>
       const results = {{ results|tojson }};
