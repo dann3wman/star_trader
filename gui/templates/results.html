@@ -41,6 +41,24 @@
       </tr>
       {% endfor %}
     </table>
+
+    <h2>Agent Stats</h2>
+    <table class="hover">
+      <tr>
+        <th>Name</th>
+        <th>Job</th>
+        <th>Money</th>
+        <th>Total Profit</th>
+      </tr>
+      {% for agent in agents %}
+      <tr>
+        <td>{{ agent.name }}</td>
+        <td>{{ agent.job }}</td>
+        <td>{{ agent.money }}</td>
+        <td>{{ agent.profit }}</td>
+      </tr>
+      {% endfor %}
+    </table>
     <p><a href="/">Run another simulation</a></p>
   </body>
 </html>
