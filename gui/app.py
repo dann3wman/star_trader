@@ -13,7 +13,7 @@ if __package__ is None:  # pragma: no cover - executed only when run directly
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-from economy import Market, SQLiteHistory
+from economy import Market, SQLiteHistory, jobs
 
 # Persistent simulation support
 DB_PATH = os.environ.get("STAR_TRADER_DB", "sim.db")
@@ -30,10 +30,27 @@ def index():
             data = request.get_json()
             num_agents = int(data.get('num_agents', 9))
             days = int(data.get('days', 1))
+            initial_money = int(data.get('initial_money', 100))
+            initial_inv = int(data.get('initial_inv', 10))
+            job_counts = data.get('job_counts', {})
         else:
             num_agents = int(request.form.get('num_agents', 9))
             days = int(request.form.get('days', 1))
-        market = Market(num_agents=num_agents)
+            initial_money = int(request.form.get('initial_money', 100))
+            initial_inv = int(request.form.get('initial_inv', 10))
+            job_counts = {}
+            for key, val in request.form.items():
+                if key.startswith('job_'):
+                    job_name = key[4:].replace('_', ' ')
+                    try:
+                        count = int(val)
+                    except ValueError:
+                        continue
+                    if count > 0:
+                        job_counts[job_name] = count
+
+        market = Market(num_agents=num_agents, job_counts=job_counts,
+                        initial_inv=initial_inv, initial_money=initial_money)
         market.simulate(days)
 
         # Collect aggregated statistics and daily price history
@@ -59,7 +76,9 @@ def index():
         if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
             return jsonify({'days': days, 'results': results, 'agents': agent_stats})
         return render_template('results.html', results=results, days=days, agents=agent_stats)
-    return render_template('index.html')
+
+    job_list = [str(j) for j in jobs.all()]
+    return render_template('index.html', jobs=job_list)
 
 
 def _compile_results(market):

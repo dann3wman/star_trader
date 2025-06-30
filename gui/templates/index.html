@@ -14,6 +14,23 @@
       <label for="days">Days:</label>
       <input type="number" id="days" name="days" value="5" min="1" class="input-number">
       <br/>
+      <label for="initial_money">Initial Money:</label>
+      <input type="number" id="initial_money" name="initial_money" value="100" min="0" class="input-number">
+      <br/>
+      <label for="initial_inv">Initial Inventory:</label>
+      <input type="number" id="initial_inv" name="initial_inv" value="10" min="0" class="input-number">
+      <br/>
+      {% if jobs %}
+      <fieldset>
+        <legend>Agents Per Job</legend>
+        {% for job in jobs %}
+          {% set slug = job.replace(' ', '_') %}
+          <label for="job_{{ slug }}">{{ job }}</label>
+          <input type="number" id="job_{{ slug }}" name="job_{{ slug }}" value="0" min="0" class="input-number">
+          <br/>
+        {% endfor %}
+      </fieldset>
+      {% endif %}
   <input type="submit" value="Run" class="button">
 </form>
 

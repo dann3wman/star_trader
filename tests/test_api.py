@@ -45,5 +45,20 @@ class TestSimulationAPI(unittest.TestCase):
         data = resp.get_json()
         self.assertEqual(data['days'], 2)
 
+    def test_job_distribution(self):
+        payload = {
+            'days': 1,
+            'job_Sand_Digger': 2,
+            'job_Glass_Maker': 1
+        }
+        resp = self.client.post('/', data=payload,
+                               headers={'Accept': 'application/json'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        data = resp.get_json()
+        jobs = [agent['job'] for agent in data['agents']]
+        self.assertEqual(jobs.count('Sand Digger'), 2)
+        self.assertEqual(jobs.count('Glass Maker'), 1)
+
 if __name__ == '__main__':
     unittest.main()
