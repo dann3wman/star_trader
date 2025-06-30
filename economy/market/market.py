@@ -143,5 +143,6 @@ class Market(object):
                 'money': agent.money,
                 'profit': agent.total_profit,
                 'trades': agent.trade_stats,
+                'trade_totals': agent.trade_totals,
             })
         return stats

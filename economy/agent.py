@@ -201,6 +201,13 @@ class Agent(object):
     def trade_stats(self):
         return self._trade_stats
 
+    @property
+    def trade_totals(self):
+        """Return total units bought and sold across all goods."""
+        bought = sum(v['bought'] for v in self._trade_stats.values())
+        sold = sum(v['sold'] for v in self._trade_stats.values())
+        return {'bought': bought, 'sold': sold}
+
     def _determine_trade_quantity(self, good, base_qty, buying=False, default=0.75):
         if base_qty <= 0:
             return 0
