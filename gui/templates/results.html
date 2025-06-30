@@ -9,7 +9,7 @@
   </head>
   <body class="grid-container">
     <h1>Results for {{ days }} day(s)</h1>
-    <table class="hover">
+    <table class="hover sortable">
       <tr>
         <th>Good</th>
         <th>Low</th>
@@ -36,7 +36,7 @@
     {% endfor %}
 
     <h2>Daily Prices</h2>
-    <table class="hover">
+    <table class="hover sortable">
       <tr>
         <th>Good</th>
         {% for day in range(1, days + 1) %}
@@ -54,7 +54,7 @@
     </table>
 
     <h2>Agent Stats</h2>
-    <table class="hover">
+    <table class="hover sortable">
       <tr>
         <th>Name</th>
         <th>Job</th>
@@ -72,7 +72,7 @@
     </table>
 
     <h2>Agent Trade Stats</h2>
-    <table class="hover">
+    <table class="hover sortable">
       <tr>
         <th>Name</th>
         <th>Good</th>
@@ -147,6 +147,32 @@
         });
         idx++;
       }
+    </script>
+    <script>
+      document.querySelectorAll('table.sortable th').forEach(header => {
+        header.addEventListener('click', () => {
+          const table = header.closest('table');
+          const column = Array.from(header.parentElement.children).indexOf(header);
+          const asc = header.dataset.sortAsc !== 'true';
+          const rows = Array.from(table.querySelectorAll('tr:nth-child(n+2)'));
+          rows.sort((a, b) => {
+            const aText = a.children[column].textContent.trim();
+            const bText = b.children[column].textContent.trim();
+            const aNum = parseFloat(aText);
+            const bNum = parseFloat(bText);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+              return aNum - bNum;
+            }
+            return aText.localeCompare(bText);
+          });
+          if (!asc) {
+            rows.reverse();
+          }
+          rows.forEach(row => table.appendChild(row));
+          table.querySelectorAll('th').forEach(th => th.removeAttribute('data-sort-asc'));
+          header.dataset.sortAsc = asc;
+        });
+      });
     </script>
   </body>
 </html>
