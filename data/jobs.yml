@@ -53,3 +53,115 @@
     - good: 'Blower'
       qty: 1
 
+# Mining and metalworking
+- name: 'Ore Miner'
+  outputs:
+    - good: 'Ore'
+      qty: 1
+  tools:
+    - tool: 'Pickaxe'
+      qty: 1
+      break_chance: 0.05
+
+- name: 'Smelter'
+  inputs:
+    - good: 'Ore'
+      qty: 2
+  outputs:
+    - good: 'Metal'
+      qty: 1
+  tools:
+    - tool: 'Furnace'
+      qty: 1
+      break_chance: 0.05
+
+# Forestry and carpentry
+- name: 'Woodcutter'
+  outputs:
+    - good: 'Wood'
+      qty: 1
+  tools:
+    - tool: 'Axe'
+      qty: 1
+      break_chance: 0.05
+
+- name: 'Carpenter'
+  inputs:
+    - good: 'Wood'
+      qty: 2
+  outputs:
+    - good: 'Plank'
+      qty: 1
+  tools:
+    - tool: 'Saw'
+      qty: 1
+      break_chance: 0.05
+
+# Masonry
+- name: 'Clay Digger'
+  outputs:
+    - good: 'Clay'
+      qty: 1
+  tools:
+    - tool: 'Shovel'
+      qty: 1
+      break_chance: 0.05
+
+- name: 'Brick Maker'
+  inputs:
+    - good: 'Clay'
+      qty: 2
+  outputs:
+    - good: 'Brick'
+      qty: 1
+  tools:
+    - tool: 'Kiln'
+      qty: 1
+      break_chance: 0.05
+
+- name: 'Mason'
+  inputs:
+    - good: 'Brick'
+      qty: 3
+  outputs:
+    - good: 'House'
+      qty: 1
+  tools:
+    - tool: 'Trowel'
+      qty: 1
+      break_chance: 0.05
+
+# Agriculture and baking
+- name: 'Farmer'
+  outputs:
+    - good: 'Wheat'
+      qty: 1
+  tools:
+    - tool: 'Hoe'
+      qty: 1
+      break_chance: 0.05
+
+- name: 'Miller'
+  inputs:
+    - good: 'Wheat'
+      qty: 2
+  outputs:
+    - good: 'Flour'
+      qty: 1
+  tools:
+    - tool: 'Millstone'
+      qty: 1
+      break_chance: 0.05
+
+- name: 'Baker'
+  inputs:
+    - good: 'Flour'
+      qty: 1
+  outputs:
+    - good: 'Bread'
+      qty: 1
+  tools:
+    - tool: 'Oven'
+      qty: 1
+      break_chance: 0.05
+

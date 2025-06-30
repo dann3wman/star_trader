@@ -13,3 +13,51 @@
 - name: 'Blower'
   size: 2.0
 
+# Mining and metalworking
+- name: 'Ore'
+  size: 1.0
+- name: 'Metal'
+  size: 1.0
+- name: 'Furnace'
+  size: 4.0
+- name: 'Pickaxe'
+  size: 2.0
+
+# Forestry and carpentry
+- name: 'Axe'
+  size: 2.0
+- name: 'Wood'
+  size: 1.0
+- name: 'Plank'
+  size: 1.0
+- name: 'Saw'
+  size: 2.0
+
+# Masonry
+- name: 'Clay'
+  size: 1.0
+- name: 'Brick'
+  size: 1.0
+- name: 'Kiln'
+  size: 4.0
+- name: 'Shovel'
+  size: 2.0
+- name: 'Trowel'
+  size: 1.0
+- name: 'House'
+  size: 10.0
+
+# Agriculture and baking
+- name: 'Hoe'
+  size: 2.0
+- name: 'Wheat'
+  size: 1.0
+- name: 'Flour'
+  size: 1.0
+- name: 'Millstone'
+  size: 3.0
+- name: 'Oven'
+  size: 5.0
+- name: 'Bread'
+  size: 1.0
+
