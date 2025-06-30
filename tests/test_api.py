@@ -2,6 +2,7 @@ import json
 import unittest
 from pathlib import Path
 import sys
+from urllib.parse import quote
 
 # Ensure project root is on path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -74,6 +75,19 @@ class TestSimulationAPI(unittest.TestCase):
         self.assertTrue(resp.is_json)
         data = resp.get_json()
         self.assertEqual(data['days'], 0)
+
+    def test_agent_detail_endpoint(self):
+        resp = self.client.post('/reset', json={'num_agents': 1})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        agent_name = data['agents'][0]['name']
+        url = '/agent/' + quote(agent_name)
+        resp = self.client.get(url, headers={'Accept': 'application/json'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        detail = resp.get_json()
+        self.assertEqual(detail['name'], agent_name)
+        self.assertIn('inventory', detail)
 
 if __name__ == '__main__':
     unittest.main()

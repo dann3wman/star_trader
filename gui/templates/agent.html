@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{{ name }} - Agent Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
+  </head>
+  <body class="grid-container">
+    <h1>{{ name }}</h1>
+    <table class="hover">
+      <tr><th>Job</th><td>{{ job }}</td></tr>
+      <tr><th>Money</th><td>{{ money }}</td></tr>
+      <tr><th>Total Profit</th><td>{{ total_profit }}</td></tr>
+      <tr><th>Age</th><td>{{ age }}</td></tr>
+    </table>
+    <h2>Inventory</h2>
+    <table class="hover">
+      <tr><th>Good</th><th>Quantity</th></tr>
+      {% for good, qty in inventory.items() %}
+      <tr><td>{{ good }}</td><td>{{ qty }}</td></tr>
+      {% endfor %}
+    </table>
+    <h2>Trade Stats</h2>
+    <table class="hover">
+      <tr><th>Good</th><th>Bought</th><th>Sold</th></tr>
+      {% for good, data in trades.items() %}
+      <tr><td>{{ good }}</td><td>{{ data.bought }}</td><td>{{ data.sold }}</td></tr>
+      {% endfor %}
+    </table>
+    <p><a href="/">Back</a></p>
+  </body>
+</html>

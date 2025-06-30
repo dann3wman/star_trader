@@ -114,6 +114,27 @@ def overview():
     return render_template('overview.html', **data)
 
 
+@app.route('/agent/<path:name>', methods=['GET'])
+def agent_detail(name):
+    """Show detailed statistics for a single agent."""
+    agent = next((a for a in _persistent_market._agents if a.name == name), None)
+    if agent is None:
+        return ("Agent not found", 404)
+    inventory = {str(g): qty for g, qty in agent._inventory._items.items()}
+    data = {
+        'name': agent.name,
+        'job': agent.job,
+        'money': agent.money,
+        'total_profit': agent.total_profit,
+        'age': agent.age,
+        'inventory': inventory,
+        'trades': {str(k): v for k, v in agent.trade_stats.items()},
+    }
+    if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+        return jsonify(data)
+    return render_template('agent.html', **data)
+
+
 @app.route('/step', methods=['POST'])
 def step():
     """Advance the persistent simulation by N days."""
