@@ -60,5 +60,13 @@ class TestSimulationAPI(unittest.TestCase):
         self.assertEqual(jobs.count('Sand Digger'), 2)
         self.assertEqual(jobs.count('Glass Maker'), 1)
 
+    def test_overview_endpoint(self):
+        resp = self.client.get('/overview', headers={'Accept': 'application/json'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        data = resp.get_json()
+        self.assertIn('days_elapsed', data)
+        self.assertIn('active_agents', data)
+
 if __name__ == '__main__':
     unittest.main()

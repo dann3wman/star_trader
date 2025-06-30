@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Market Overview</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
+  </head>
+  <body class="grid-container">
+    <h1>Market Overview</h1>
+    <table class="hover">
+      <tr><th>Days Elapsed</th><td>{{ days_elapsed }}</td></tr>
+      <tr><th>Active Agents</th><td>{{ active_agents }}</td></tr>
+      <tr><th>Average Agent Age</th><td>{{ average_age|round(2) }}</td></tr>
+      <tr><th>Average Agent Lifespan</th><td>{{ average_lifespan|round(2) }}</td></tr>
+    </table>
+    <p><a href="/">Back</a></p>
+  </body>
+</html>

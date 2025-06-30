@@ -105,6 +105,15 @@ def _compile_results(market):
     return {'days': days, 'results': results, 'agents': agent_stats}
 
 
+@app.route('/overview', methods=['GET'])
+def overview():
+    """Return high level market overview for the persistent market."""
+    data = _persistent_market.overview_stats()
+    if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+        return jsonify(data)
+    return render_template('overview.html', **data)
+
+
 @app.route('/step', methods=['POST'])
 def step():
     """Advance the persistent simulation by N days."""
