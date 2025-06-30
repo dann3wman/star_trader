@@ -14,15 +14,15 @@
 #       - good: 'Another Good'
 #         qty: 2
 #     tools:            # (Optional) List of Tools required by this Job
-#       - tool: 'Wrench'# String name of the Tool
+#       - tool: 'Blower' # String name of the Tool (must match a Good)
 #         qty: 1        # How many are needed to perform the Job
 #         break_chance: 0.1 # Percent chance (as a float) that the Tool will break
 # NB: If either of inputs or outputs are omitted, the Job will not require or
 # produce (respectively) any Goods. If BOTH are omitted, well, it's probably a
 # pretty useless Job, isn't it?
 # Omitting the tools list likewise means that no tools are required to perform
-# the Job. Tools are in fact Goods, so when adding a Tool be sure there is a
-# corresponding Good as well.
+# the Job. Tools are defined as Goods, so when adding a Tool be sure it also
+# appears in `data/goods.yml`.
 
 - name: 'Sand Digger'
   outputs:
