@@ -22,9 +22,13 @@ JobTool = namedtuple('JobTool', ['tool','qty','break_chance'])
 class Job(object):
     __slots__ = ('__inputs','__outputs','__tools','__name','__limit')
 
-    def __init__(self, name, inputs=[], outputs=[], tools=[], limit=None):
+    def __init__(self, name, inputs=None, outputs=None, tools=None, limit=None):
         self.__name = name
         self.__limit = limit
+
+        inputs = inputs or []
+        outputs = outputs or []
+        tools = tools or []
 
         self.__inputs = ()
         for step in inputs:
