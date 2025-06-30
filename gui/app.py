@@ -33,7 +33,12 @@ def _render_results(history, agents=None):
             'ratio': ratio,
             'prices': prices,
         }
-    return render_template('results.html', results=results, days=days, agents=agents)
+    return render_template(
+        'results.html',
+        results=results,
+        days=days,
+        agents=agents,
+    )
 
 
 @app.route('/')
