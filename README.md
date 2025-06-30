@@ -43,11 +43,14 @@ A short example of starting a simulation is shown below:
 from economy import Market
 
 # Create a market with a handful of agents
-market = Market(num_agents=9)
+market = Market(num_agents=9, daily_tax=1)
 
 # Run the simulation for five days
 market.simulate(5)
 ```
+
+Passing ``daily_tax`` ensures agents must trade to stay solvent by deducting a
+flat amount of money each day.
 
 This will print out each agent's activity and the trades executed on each day.
 

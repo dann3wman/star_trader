@@ -119,6 +119,10 @@ class Agent(object):
     def profit(self):
         return self._money - self._money_last_round
 
+    def apply_tax(self, amount):
+        """Deduct a flat tax from the agent's money."""
+        self._money -= amount
+
     @property
     def is_bankrupt(self):
         # TODO: TEMPORARY hack to prevent "harvesters"/"consumers" going bankrupt

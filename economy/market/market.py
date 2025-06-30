@@ -13,7 +13,7 @@ class Market(object):
     _history = None
 
     def __init__(self, num_agents=15, history=None, job_counts=None,
-                 initial_inv=10, initial_money=100):
+                 initial_inv=10, initial_money=100, daily_tax=0):
         """Create a new market instance.
 
         Parameters
@@ -31,11 +31,14 @@ class Market(object):
             Starting inventory quantity for each agent.
         initial_money : int
             Starting money for each agent.
+        daily_tax : int or float
+            Flat amount of money deducted from each agent every day.
         """
 
         self._agents = []
         self._book = OrderBook()
         self._history = history if history is not None else MarketHistory()
+        self._daily_tax = daily_tax
 
         job_list = list(jobs.all())
         if not job_list:
@@ -95,6 +98,11 @@ class Market(object):
                 daily_sd[good] = trades
 
             self._history.close_day()
+
+            # Deduct daily tax from all agents
+            if self._daily_tax:
+                for agent in self._agents:
+                    agent.apply_tax(self._daily_tax)
 
             agents = [agent for agent in self._agents if not agent.is_bankrupt]
 
