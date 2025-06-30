@@ -13,8 +13,8 @@ available goods and tools and adjust their beliefs about prices over time.
 └── economy/   # Python package implementing the simulation
     ├── agent.py       # Agent behaviour and inventory management
     ├── beliefs.py     # Price beliefs used by agents
-    ├── goods.py       # Load goods from `data/goods.yml`
-    ├── jobs.py        # Load jobs from `data/jobs.yml`
+    ├── goods.py       # Load goods from the database
+    ├── jobs.py        # Load jobs from the database
     ├── offer.py       # Ask/Bid definitions
     └── market/        # Market engine and order book
         ├── market.py  # `Market` class and simulation loop
@@ -24,9 +24,10 @@ available goods and tools and adjust their beliefs about prices over time.
 
 ### `data/`
 
-The `data` folder contains YAML configuration files. `goods.yml` lists all tradeable
-goods and their storage size while `jobs.yml` defines the jobs that agents can
-perform, including the required inputs and produced outputs.
+The `data` folder contains YAML configuration files used to seed the
+database. `goods.yml` lists the available goods while `jobs.yml` defines the
+job recipes. On the first run the database tables are populated from these
+files and subsequent runs load the definitions from SQLite.
 
 ### `economy/`
 
