@@ -63,7 +63,7 @@
       </tr>
       {% for agent in agents %}
       <tr>
-        <td>{{ agent.name }}</td>
+        <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
         <td>{{ agent.job }}</td>
         <td>{{ agent.money }}</td>
         <td>{{ agent.profit }}</td>
@@ -83,7 +83,7 @@
         {% if agent.trades %}
           {% for good, data in agent.trades.items() %}
           <tr>
-            <td>{{ agent.name }}</td>
+            <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
             <td>{{ good }}</td>
             <td>{{ data.bought }}</td>
             <td>{{ data.sold }}</td>
@@ -91,7 +91,7 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td>{{ agent.name }}</td>
+            <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
             <td colspan="3">No trades</td>
           </tr>
         {% endif %}
