@@ -12,10 +12,10 @@ class Market(object):
     _book = None
     _history = None
 
-    def __init__(self, num_agents=15):
+    def __init__(self, num_agents=15, history=None):
         self._agents = []
         self._book = OrderBook()
-        self._history = MarketHistory()
+        self._history = history if history is not None else MarketHistory()
 
         job_list = list(jobs.all())
         if not job_list:
