@@ -45,6 +45,11 @@
     <input type="number" id="p_agents" name="num_agents" value="9" min="1" class="input-number">
     <input type="submit" value="Reset" class="button alert">
   </form>
+  <form action="/rebuild" method="post">
+    <label for="rb_agents">Agents:</label>
+    <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
+    <input type="submit" value="Rebuild DB" class="button warning">
+  </form>
   <form action="/load" method="get">
     <label for="db">DB File:</label>
     <input type="text" id="db" name="db" value="sim.db">

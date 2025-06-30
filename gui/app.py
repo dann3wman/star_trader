@@ -13,7 +13,7 @@ if __package__ is None:  # pragma: no cover - executed only when run directly
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-from economy import Market, SQLiteHistory, jobs
+from economy import Market, SQLiteHistory, jobs, rebuild_database
 
 # Persistent simulation support
 DB_PATH = os.environ.get("STAR_TRADER_DB", "sim.db")
@@ -158,6 +158,24 @@ def load():
     _persistent_market = Market(num_agents=num_agents, history=_history)
     data = _compile_results(_persistent_market)
     if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+        return jsonify(data)
+    return render_template('results.html', **data)
+
+
+@app.route('/rebuild', methods=['POST'])
+def rebuild():
+    """Rebuild goods and jobs tables and reset the persistent market."""
+    if request.is_json:
+        data = request.get_json()
+        num_agents = int(data.get('num_agents', 9))
+    else:
+        num_agents = int(request.form.get('num_agents', 9))
+    rebuild_database()
+    global _history, _persistent_market
+    _history.reset()
+    _persistent_market = Market(num_agents=num_agents, history=_history)
+    data = _compile_results(_persistent_market)
+    if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
         return jsonify(data)
     return render_template('results.html', **data)
 
