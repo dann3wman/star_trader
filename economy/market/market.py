@@ -4,7 +4,7 @@ import random
 from economy.agent import Agent, dump_agent
 from economy import goods, jobs
 from economy.market.book import OrderBook
-from economy.market.history import MarketHistory
+from economy.market.history import SQLiteHistory, MarketHistory
 
 
 class Market(object):
@@ -23,7 +23,8 @@ class Market(object):
             Total number of agents to create if ``job_counts`` is not
             provided.
         history : MarketHistory, optional
-            History backend to use.
+            History backend to use. Defaults to ``SQLiteHistory`` which
+            persists trades to a SQLite database.
         job_counts : dict, optional
             Mapping of job names to the number of agents for that job. When
             supplied ``num_agents`` is ignored and agents are created exactly
@@ -36,7 +37,8 @@ class Market(object):
 
         self._agents = []
         self._book = OrderBook()
-        self._history = history if history is not None else MarketHistory()
+        # Store trade history in SQLite by default
+        self._history = history if history is not None else SQLiteHistory()
         self._lifespans = []
 
         job_list = list(jobs.all())
