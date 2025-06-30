@@ -83,7 +83,7 @@ class Agent(object):
         self._money = initial_money
         self._money_last_round = initial_money
         self._initial_money = initial_money
-        self._name = AGENT_NAMES.pop()
+        self._name = f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
 
         self._trade_stats = {}
 
@@ -261,7 +261,7 @@ class Agent(object):
 
         return round(cost/max(1,outputs))
 
-AGENT_NAMES = [
+FIRST_NAMES = [
     'James',
     'Mary',
     'John',
@@ -463,5 +463,14 @@ AGENT_NAMES = [
     'Logan',
     'Kayla',
 ]
-random.shuffle(AGENT_NAMES)
+
+LAST_NAMES = [
+    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
+    'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson',
+    'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez',
+    'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis',
+    'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres',
+    'Nguyen', 'Hill', 'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Hall',
+    'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts'
+]
 
