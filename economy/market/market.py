@@ -88,36 +88,40 @@ class Market(object):
                 self._book.add_orders(agent.make_offers())
                 agent.do_production()
 
+            daily_sd = {}
             for good in goods.all():
                 trades = self._book.resolve_orders(good)
                 self._history.add_trades(good, trades)
+                daily_sd[good] = trades
 
             self._history.close_day()
 
             agents = [agent for agent in self._agents if not agent.is_bankrupt]
 
             while len(agents) < len(self._agents):
-                profit_by_job = {}
-                for agent in agents:
-                    job_profit = profit_by_job.get(agent.job, [0, 0])
-                    job_profit[0] += agent.profit
-                    job_profit[1] += 1
+                job_weights = {}
 
-                    profit_by_job[agent.job] = job_profit
+                for good, trade in daily_sd.items():
+                    delta = trade.supply - trade.demand
+                    if delta > 0:
+                        # Oversupply: favour consumers of this good
+                        for job in jobs.all():
+                            if any(step.good == good for step in job.inputs):
+                                job_weights[job] = job_weights.get(job, 0) + delta
+                    elif delta < 0:
+                        # Excess demand: favour producers
+                        for job in jobs.all():
+                            if any(step.good == good for step in job.outputs):
+                                job_weights[job] = job_weights.get(job, 0) + (-delta)
 
-                if profit_by_job:
-                    profits = []
-                    for job in profit_by_job:
-                        avg = profit_by_job[job][0] / profit_by_job[job][1]
-                        profits.append((avg, job))
-
-                    profits.sort(key=lambda x: x[0], reverse=True)
-                    next_job = jobs.by_name(profits[0][1])
+                if job_weights:
+                    choices = list(job_weights.keys())
+                    weights = list(job_weights.values())
+                    recipe = random.choices(choices, weights=weights, k=1)[0]
                 else:
-                    # No surviving agents to base profits on; pick a random job
-                    next_job = random.choice(list(jobs.all()))
+                    recipe = random.choice(list(jobs.all()))
 
-                agents.append(Agent(next_job, self))
+                agents.append(Agent(recipe, self))
 
             self._agents = agents
 
