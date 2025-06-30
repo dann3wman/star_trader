@@ -50,3 +50,19 @@ market.simulate(5)
 
 This will print out each agent's activity and the trades executed on each day.
 
+## Setup
+
+The project can be run inside a virtual environment to isolate its
+dependencies:
+
+```bash
+# Create and activate the virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install required packages
+pip install -r requirements.txt
+```
+
+After activating the environment, the unit tests can be executed with `pytest`.
+
