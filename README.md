@@ -66,3 +66,13 @@ pip install -r requirements.txt
 
 After activating the environment, the unit tests can be executed with `pytest`.
 
+
+## Running the Flask GUI
+
+A simple Flask application is provided in `gui/app.py`. After installing the requirements you can launch the web interface with:
+
+```bash
+python gui/app.py
+```
+
+Open your browser at [http://localhost:5000](http://localhost:5000) to configure and run a simulation.

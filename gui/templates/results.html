@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Results</title>
+  </head>
+  <body>
+    <h1>Results for {{ days }} day(s)</h1>
+    <table border="1">
+      <tr>
+        <th>Good</th>
+        <th>Low</th>
+        <th>High</th>
+        <th>Current</th>
+      </tr>
+      {% for good, data in results.items() %}
+      <tr>
+        <td>{{ good }}</td>
+        <td>{{ data.low }}</td>
+        <td>{{ data.high }}</td>
+        <td>{{ data.current }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p><a href="/">Run another simulation</a></p>
+  </body>
+</html>
