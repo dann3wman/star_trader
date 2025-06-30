@@ -133,3 +133,15 @@ class Market(object):
 
     def aggregate(self, good, depth=None):
         return self._history.aggregate(good, depth)
+
+    def agent_stats(self):
+        stats = []
+        for agent in self._agents:
+            stats.append({
+                'name': agent.name,
+                'job': agent.job,
+                'money': agent.money,
+                'profit': agent.total_profit,
+                'trades': agent.trade_stats,
+            })
+        return stats

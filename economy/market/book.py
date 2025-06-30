@@ -72,6 +72,8 @@ class OrderBook(object):
 
             bid.agent.give_money(qty * price, ask.agent)
             ask.agent.give_items(good, qty, bid.agent)
+            bid.agent.record_purchase(good, qty)
+            ask.agent.record_sale(good, qty)
 
             bid.agent.beliefs.update(good, price)
             ask.agent.beliefs.update(good, price)

@@ -85,6 +85,3 @@ python gui/app.py
 Open your browser at [http://localhost:5000](http://localhost:5000) to configure and run a simulation.
 
 The results page now includes a table showing the average price of each good for every simulated day, allowing you to track price trends over time.
-
-The web interface persists trade history using SQLite. Click **Simulate** to
-advance by the selected number of days or **Reset Simulation** to start over.

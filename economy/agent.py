@@ -73,6 +73,8 @@ class Agent(object):
     _money = 0
     _money_last_round = 0
     _name = None
+    _initial_money = 0
+    _trade_stats = None
     beliefs = None
 
     def __init__(self, recipe, market, initial_inv=10, initial_money=100):
@@ -80,7 +82,10 @@ class Agent(object):
         self._market = market
         self._money = initial_money
         self._money_last_round = initial_money
+        self._initial_money = initial_money
         self._name = AGENT_NAMES.pop()
+
+        self._trade_stats = {}
 
         self.beliefs = Beliefs()
 
@@ -97,6 +102,18 @@ class Agent(object):
     @property
     def job(self):
         return str(self._recipe)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def money(self):
+        return self._money
+
+    @property
+    def total_profit(self):
+        return self._money - self._initial_money
 
     @property
     def profit(self):
@@ -171,6 +188,18 @@ class Agent(object):
     def give_items(self, item, amt, other):
         self._inventory.remove_item(item, amt)
         other._inventory.add_item(item, amt)
+
+    def record_purchase(self, good, qty):
+        stats = self._trade_stats.setdefault(good, {'bought': 0, 'sold': 0})
+        stats['bought'] += qty
+
+    def record_sale(self, good, qty):
+        stats = self._trade_stats.setdefault(good, {'bought': 0, 'sold': 0})
+        stats['sold'] += qty
+
+    @property
+    def trade_stats(self):
+        return self._trade_stats
 
     def _determine_trade_quantity(self, good, base_qty, buying=False, default=0.75):
         if base_qty <= 0:

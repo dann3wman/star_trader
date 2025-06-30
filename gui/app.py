@@ -48,12 +48,6 @@ def index():
                 'prices': prices,
             }
 
-        return render_template(
-            'results.html',
-            results=results,
-            days=days,
-            day_number=history.day_number,
-        )
     return render_template('index.html')
 
 if __name__ == '__main__':
