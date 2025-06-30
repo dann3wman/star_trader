@@ -1,0 +1,28 @@
+import json
+import unittest
+from pathlib import Path
+import sys
+
+# Ensure project root is on path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from gui.app import app
+
+class TestSimulationAPI(unittest.TestCase):
+    def setUp(self):
+        app.testing = True
+        self.client = app.test_client()
+
+    def test_json_response(self):
+        resp = self.client.post('/', data={'num_agents': 3, 'days': 1}, headers={'Accept': 'application/json'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        data = resp.get_json()
+        self.assertIn('results', data)
+        self.assertIn('agents', data)
+        good = next(iter(data['results']))
+        self.assertIn('prices', data['results'][good])
+        self.assertIn('volumes', data['results'][good])
+
+if __name__ == '__main__':
+    unittest.main()

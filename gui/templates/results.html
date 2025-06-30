@@ -4,6 +4,8 @@
     <title>Results</title>
     <!-- Include the Foundation CSS framework -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
+    <!-- Chart.js for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="grid-container">
     <h1>Results for {{ days }} day(s)</h1>
@@ -23,6 +25,15 @@
       </tr>
       {% endfor %}
     </table>
+
+    <h2>Price and Volume Charts</h2>
+    {% set idx = 1 %}
+    {% for good, data in results.items() %}
+    <h3>{{ good }}</h3>
+    <canvas id="priceChart-{{ idx }}" width="400" height="200"></canvas>
+    <canvas id="volumeChart-{{ idx }}" width="400" height="200"></canvas>
+    {% set idx = idx + 1 %}
+    {% endfor %}
 
     <h2>Daily Prices</h2>
     <table class="hover">
@@ -60,5 +71,41 @@
       {% endfor %}
     </table>
     <p><a href="/">Run another simulation</a></p>
+    <script>
+      const results = {{ results|tojson }};
+      const days = {{ days }};
+      const labels = Array.from({length: days}, (_, i) => `Day ${i+1}`);
+      let idx = 1;
+      for (const [good, data] of Object.entries(results)) {
+        const priceCtx = document.getElementById(`priceChart-${idx}`).getContext('2d');
+        new Chart(priceCtx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: `${good} Price`,
+              data: data.prices,
+              fill: false,
+              borderColor: 'blue'
+            }]
+          },
+          options: {responsive: false}
+        });
+        const volCtx = document.getElementById(`volumeChart-${idx}`).getContext('2d');
+        new Chart(volCtx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: `${good} Volume`,
+              data: data.volumes,
+              backgroundColor: 'orange'
+            }]
+          },
+          options: {responsive: false}
+        });
+        idx++;
+      }
+    </script>
   </body>
 </html>

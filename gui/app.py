@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
 # Ensure the project root is on the Python path when running this module
 # directly (e.g. `python gui/app.py`). This allows imports like
@@ -19,8 +19,13 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        num_agents = int(request.form.get('num_agents', 9))
-        days = int(request.form.get('days', 1))
+        if request.is_json:
+            data = request.get_json()
+            num_agents = int(data.get('num_agents', 9))
+            days = int(data.get('days', 1))
+        else:
+            num_agents = int(request.form.get('num_agents', 9))
+            days = int(request.form.get('days', 1))
         market = Market(num_agents=num_agents)
         market.simulate(days)
 
@@ -31,16 +36,21 @@ def index():
             low, high, current, ratio = market.aggregate(good, days)
             # Extract mean price for each day (may be None if no trades)
             prices = [trade.mean for trade in hist[good]]
-            results[good] = {
+            volumes = [trade.volume for trade in hist[good]]
+            results[str(good)] = {
                 'low': low,
                 'high': high,
                 'current': current,
                 'ratio': ratio,
                 'prices': prices,
+                'volumes': volumes,
             }
 
         agent_stats = market.agent_stats()
-
+        for agent in agent_stats:
+            agent['trades'] = {str(k): v for k, v in agent['trades'].items()}
+        if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+            return jsonify({'days': days, 'results': results, 'agents': agent_stats})
         return render_template('results.html', results=results, days=days, agents=agent_stats)
     return render_template('index.html')
 
