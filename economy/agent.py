@@ -191,6 +191,10 @@ class Agent(object):
         self._money -= amt
         other._money += amt
 
+    def pay_tax(self, amount):
+        """Deduct a daily flat tax from the agent's money."""
+        self._money -= amount
+
     def give_items(self, item, amt, other):
         self._inventory.remove_item(item, amt)
         other._inventory.add_item(item, amt)

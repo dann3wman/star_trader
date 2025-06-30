@@ -14,7 +14,7 @@ class Market(object):
     _lifespans = None
 
     def __init__(self, num_agents=15, history=None, job_counts=None,
-                 initial_inv=10, initial_money=100):
+                 initial_inv=10, initial_money=100, daily_tax=1):
         """Create a new market instance.
 
         Parameters
@@ -33,6 +33,8 @@ class Market(object):
             Starting inventory quantity for each agent.
         initial_money : int
             Starting money for each agent.
+        daily_tax : int
+            Flat amount of money deducted from each agent every day.
         """
 
         self._agents = []
@@ -40,6 +42,7 @@ class Market(object):
         # Store trade history in SQLite by default
         self._history = history if history is not None else SQLiteHistory()
         self._lifespans = []
+        self._daily_tax = daily_tax
 
         job_list = list(jobs.all())
         if not job_list:
@@ -101,6 +104,7 @@ class Market(object):
             self._history.close_day()
 
             for agent in self._agents:
+                agent.pay_tax(self._daily_tax)
                 agent.advance_day()
 
             dead_agents = [agent for agent in self._agents if agent.is_bankrupt]
