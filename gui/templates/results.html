@@ -59,6 +59,33 @@
       </tr>
       {% endfor %}
     </table>
+
+    <h2>Agent Trade Stats</h2>
+    <table class="hover">
+      <tr>
+        <th>Name</th>
+        <th>Good</th>
+        <th>Bought</th>
+        <th>Sold</th>
+      </tr>
+      {% for agent in agents %}
+        {% if agent.trades %}
+          {% for good, data in agent.trades.items() %}
+          <tr>
+            <td>{{ agent.name }}</td>
+            <td>{{ good }}</td>
+            <td>{{ data.bought }}</td>
+            <td>{{ data.sold }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td>{{ agent.name }}</td>
+            <td colspan="3">No trades</td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
     <p><a href="/">Run another simulation</a></p>
   </body>
 </html>
