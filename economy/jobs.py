@@ -1,5 +1,8 @@
 from collections import namedtuple
+import os
 import yaml
+
+from . import db
 
 
 from . import goods
@@ -77,7 +80,96 @@ class Job(object):
         return self.__name
 
 
-with open('data/jobs.yml') as fh:
-    for job in yaml.safe_load(fh):
-        Job(**job)
+
+def _load_jobs():
+    """Load job definitions from the database, using YAML as a seed if empty."""
+    conn = db.get_connection()
+    with conn:
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS jobs(
+                    name TEXT PRIMARY KEY,
+                    job_limit INTEGER
+                )"""
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS job_inputs(
+                    job TEXT,
+                    good TEXT,
+                    qty INTEGER
+                )"""
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS job_outputs(
+                    job TEXT,
+                    good TEXT,
+                    qty INTEGER
+                )"""
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS job_tools(
+                    job TEXT,
+                    tool TEXT,
+                    qty INTEGER,
+                    break_chance REAL
+                )"""
+        )
+
+        cur = conn.execute("SELECT name, job_limit FROM jobs")
+        rows = cur.fetchall()
+        if not rows:
+            with open(os.path.join("data", "jobs.yml")) as fh:
+                data = yaml.safe_load(fh)
+            for job in data:
+                conn.execute(
+                    "INSERT INTO jobs(name, job_limit) VALUES (?, ?)",
+                    (job["name"], job.get("limit")),
+                )
+                for step in job.get("inputs", []):
+                    conn.execute(
+                        "INSERT INTO job_inputs(job, good, qty) VALUES (?, ?, ?)",
+                        (job["name"], step["good"], step["qty"]),
+                    )
+                for step in job.get("outputs", []):
+                    conn.execute(
+                        "INSERT INTO job_outputs(job, good, qty) VALUES (?, ?, ?)",
+                        (job["name"], step["good"], step["qty"]),
+                    )
+                for tool in job.get("tools", []):
+                    conn.execute(
+                        "INSERT INTO job_tools(job, tool, qty, break_chance) VALUES (?, ?, ?, ?)",
+                        (
+                            job["name"],
+                            tool["tool"],
+                            tool["qty"],
+                            tool["break_chance"],
+                        ),
+                    )
+            rows = conn.execute("SELECT name, job_limit FROM jobs").fetchall()
+
+    for name, job_limit in rows:
+        inputs = [
+            {"good": r[0], "qty": r[1]}
+            for r in conn.execute(
+                "SELECT good, qty FROM job_inputs WHERE job=?", (name,)
+            ).fetchall()
+        ]
+        outputs = [
+            {"good": r[0], "qty": r[1]}
+            for r in conn.execute(
+                "SELECT good, qty FROM job_outputs WHERE job=?", (name,)
+            ).fetchall()
+        ]
+        tools = [
+            {"tool": r[0], "qty": r[1], "break_chance": r[2]}
+            for r in conn.execute(
+                "SELECT tool, qty, break_chance FROM job_tools WHERE job=?",
+                (name,),
+            ).fetchall()
+        ]
+        Job(name=name, inputs=inputs, outputs=outputs, tools=tools, limit=job_limit)
+
+    conn.close()
+
+
+_load_jobs()
 
