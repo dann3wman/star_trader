@@ -23,6 +23,24 @@
       </tr>
       {% endfor %}
     </table>
+
+    <h2>Daily Prices</h2>
+    <table class="hover">
+      <tr>
+        <th>Good</th>
+        {% for day in range(1, days + 1) %}
+        <th>Day {{ day }}</th>
+        {% endfor %}
+      </tr>
+      {% for good, data in results.items() %}
+      <tr>
+        <td>{{ good }}</td>
+        {% for price in data.prices %}
+        <td>{% if price is none %}N/A{% else %}{{ price }}{% endif %}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
     <p><a href="/">Run another simulation</a></p>
   </body>
 </html>

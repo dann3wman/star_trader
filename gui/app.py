@@ -23,15 +23,22 @@ def index():
         days = int(request.form.get('days', 1))
         market = Market(num_agents=num_agents)
         market.simulate(days)
+
+        # Collect aggregated statistics and daily price history
+        hist = market.history(days)
         results = {}
-        for good in market.history():
-            low, high, current, ratio = market.aggregate(good)
+        for good in hist:
+            low, high, current, ratio = market.aggregate(good, days)
+            # Extract mean price for each day (may be None if no trades)
+            prices = [trade.mean for trade in hist[good]]
             results[good] = {
                 'low': low,
                 'high': high,
                 'current': current,
                 'ratio': ratio,
+                'prices': prices,
             }
+
         return render_template('results.html', results=results, days=days)
     return render_template('index.html')
 
