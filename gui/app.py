@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
-from economy.market.market import Market
+
+from economy import Market
 
 app = Flask(__name__)
 
