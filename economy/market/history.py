@@ -1,6 +1,7 @@
 from collections import namedtuple
 from functools import lru_cache
 import logging
+import sqlite3
 
 
 from economy import goods
@@ -17,6 +18,7 @@ class MarketHistory(object):
         self._max_depth = max_depth
         self._history = {}
         self._day = None
+        self._day_number = 0
 
         for good in goods.all():
             self._history[good] = []
@@ -25,6 +27,7 @@ class MarketHistory(object):
         if self._day is not None:
             logger.warning('Opening new day before previous day was properly closed. Its trades have been lost. You must call close_day() to commit trades to the history.')
 
+        self._day_number += 1
         self._day = {}
         for good in goods.all():
             self._day[good] = None
@@ -101,4 +104,74 @@ class MarketHistory(object):
             ratio = 0.5
 
         return (low, high, current, ratio)
+
+    @property
+    def day_number(self):
+        return self._day_number
+
+
+
+class SQLiteHistory(MarketHistory):
+    """Persist market history to a SQLite database."""
+
+    def __init__(self, db_path="sim.db", max_depth=30):
+        self._db_path = db_path
+        self._conn = sqlite3.connect(db_path)
+        self._conn.execute(
+            """CREATE TABLE IF NOT EXISTS trades(
+                day INTEGER,
+                good TEXT,
+                volume INTEGER,
+                low INTEGER,
+                high INTEGER,
+                mean INTEGER,
+                supply INTEGER,
+                demand INTEGER
+            )"""
+        )
+        self._conn.commit()
+
+        super().__init__(max_depth=max_depth)
+
+        # Load any existing data
+        cur = self._conn.execute("SELECT MAX(day) FROM trades")
+        row = cur.fetchone()
+        self._day_number = row[0] or 0
+
+        for good in goods.all():
+            self._history[good] = []
+            cur = self._conn.execute(
+                "SELECT volume, low, high, mean, supply, demand FROM trades WHERE good=? ORDER BY day",
+                (good,),
+            )
+            for r in cur.fetchall():
+                self._history[good].append(Trades(*r))
+
+    def close_day(self):
+        super().close_day()
+        day = self._day_number
+        cur = self._conn.cursor()
+        for good in goods.all():
+            trades = self._history[good][-1]
+            cur.execute(
+                "INSERT INTO trades(day, good, volume, low, high, mean, supply, demand) VALUES (?,?,?,?,?,?,?,?)",
+                (
+                    day,
+                    good,
+                    trades.volume,
+                    trades.low,
+                    trades.high,
+                    trades.mean,
+                    trades.supply,
+                    trades.demand,
+                ),
+            )
+        self._conn.commit()
+
+    def reset(self):
+        """Clear all data from the database and memory."""
+        self._conn.execute("DELETE FROM trades")
+        self._conn.commit()
+        self._history = {good: [] for good in goods.all()}
+        self._day_number = 0
 

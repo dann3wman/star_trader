@@ -1,6 +1,11 @@
 from .agent import Agent
-
-__all__ = ['Agent']
+try:
+    from .market.history import SQLiteHistory
+except Exception:  # pragma: no cover - optional dependency
+    SQLiteHistory = None
+    __all__ = ['Agent']
+else:
+    __all__ = ['Agent', 'SQLiteHistory']
 
 # try:
 from .market import Market
