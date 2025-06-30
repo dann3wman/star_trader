@@ -68,5 +68,12 @@ class TestSimulationAPI(unittest.TestCase):
         self.assertIn('days_elapsed', data)
         self.assertIn('active_agents', data)
 
+    def test_rebuild_endpoint(self):
+        resp = self.client.post('/rebuild', json={'num_agents': 2})
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.is_json)
+        data = resp.get_json()
+        self.assertEqual(data['days'], 0)
+
 if __name__ == '__main__':
     unittest.main()

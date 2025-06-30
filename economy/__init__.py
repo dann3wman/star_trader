@@ -9,6 +9,7 @@ else:
 
 # try:
 from .market import Market
+from .db import rebuild_database
 # except Exception:
 #     # Importing Market pulls in optional dependencies such as PyYAML
 #     # which may not be installed in minimal test environments. To keep
@@ -17,4 +18,5 @@ from .market import Market
 #     Market = None
 # else:
 __all__.append('Market')
+__all__.append('rebuild_database')
 
