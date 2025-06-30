@@ -6,15 +6,32 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
   </head>
   <body class="grid-container">
-    <h1>Run Simulation</h1>
-    <form method="post">
+<h1>Run Simulation</h1>
+<form method="post">
       <label for="num_agents">Number of Agents:</label>
       <input type="number" id="num_agents" name="num_agents" value="9" min="1" class="input-number">
       <br/>
       <label for="days">Days:</label>
       <input type="number" id="days" name="days" value="5" min="1" class="input-number">
       <br/>
-      <input type="submit" value="Run" class="button">
-    </form>
+  <input type="submit" value="Run" class="button">
+</form>
+
+  <h2>Persistent Simulation</h2>
+  <form action="/step" method="post">
+    <label for="p_days">Days to Step:</label>
+    <input type="number" id="p_days" name="days" value="1" min="1" class="input-number">
+    <input type="submit" value="Step" class="button">
+  </form>
+  <form action="/reset" method="post">
+    <label for="p_agents">Agents:</label>
+    <input type="number" id="p_agents" name="num_agents" value="9" min="1" class="input-number">
+    <input type="submit" value="Reset" class="button alert">
+  </form>
+  <form action="/load" method="get">
+    <label for="db">DB File:</label>
+    <input type="text" id="db" name="db" value="sim.db">
+    <input type="submit" value="Load" class="button secondary">
+  </form>
   </body>
 </html>
