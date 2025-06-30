@@ -86,3 +86,8 @@ Open your browser at [http://localhost:5000](http://localhost:5000) to configure
 
 The results page now includes a table showing the average price of each good for every simulated day, allowing you to track price trends over time.
 It also lists statistics for each agent, including their final money and total profit, so you can compare how well different strategies performed.
+
+The web interface persists trade history in a SQLite database. Use the **Step**
+button to advance the simulation and **Reset** to clear any stored data.
+The **View Results** link loads the existing run without running a new
+simulation.

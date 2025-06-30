@@ -42,6 +42,7 @@
       {% endfor %}
     </table>
 
+    {% if agents %}
     <h2>Agent Stats</h2>
     <table class="hover">
       <tr>
@@ -59,6 +60,7 @@
       </tr>
       {% endfor %}
     </table>
-    <p><a href="/">Run another simulation</a></p>
+    {% endif %}
+    <p><a href="/">Back</a></p>
   </body>
 </html>

@@ -6,15 +6,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
   </head>
   <body class="grid-container">
-    <h1>Run Simulation</h1>
-    <form method="post">
+    <h1>Persisted Simulation</h1>
+    <form action="/step" method="post">
       <label for="num_agents">Number of Agents:</label>
       <input type="number" id="num_agents" name="num_agents" value="9" min="1" class="input-number">
       <br/>
-      <label for="days">Days:</label>
-      <input type="number" id="days" name="days" value="5" min="1" class="input-number">
+      <label for="days">Days to Step:</label>
+      <input type="number" id="days" name="days" value="1" min="1" class="input-number">
       <br/>
-      <input type="submit" value="Run" class="button">
+      <input type="submit" value="Step" class="button">
     </form>
+
+    <form action="/reset" method="post" style="margin-top: 1em;">
+      <input type="submit" value="Reset Simulation" class="alert button">
+    </form>
+
+    <p style="margin-top: 1em;"><a href="/results">View Results</a></p>
   </body>
 </html>
