@@ -52,13 +52,18 @@ class Market(object):
 
                     profit_by_job[agent.job] = job_profit
 
-                profits = []
-                for job in profit_by_job:
-                    profits.append((profit_by_job[job][0]/profit_by_job[job][1], job))
+                if profit_by_job:
+                    profits = []
+                    for job in profit_by_job:
+                        profits.append((profit_by_job[job][0]/profit_by_job[job][1], job))
 
-                profits.sort(key=lambda x: x[0], reverse=True)
+                    profits.sort(key=lambda x: x[0], reverse=True)
+                    next_job = jobs.by_name(profits[0][1])
+                else:
+                    # No surviving agents to base profits on; pick a random job
+                    next_job = random.choice(list(jobs.all()))
 
-                agents.append(Agent(jobs.by_name(profits[0][1]), self))
+                agents.append(Agent(next_job, self))
 
             self._agents = agents
 
