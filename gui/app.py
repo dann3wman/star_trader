@@ -39,7 +39,9 @@ def index():
                 'prices': prices,
             }
 
-        return render_template('results.html', results=results, days=days)
+        agent_stats = market.agent_stats()
+
+        return render_template('results.html', results=results, days=days, agents=agent_stats)
     return render_template('index.html')
 
 if __name__ == '__main__':
