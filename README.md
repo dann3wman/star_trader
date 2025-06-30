@@ -50,6 +50,13 @@ market.simulate(5)
 
 This will print out each agent's activity and the trades executed on each day.
 
+### Persisting simulation data
+
+`simulate.py` provides a small command line interface that stores all
+trade history in a SQLite database. Run `python simulate.py --step` to
+advance the existing simulation by one day or `python simulate.py --reset`
+to start over from scratch.
+
 ## Setup
 
 The project can be run inside a virtual environment to isolate its
@@ -78,3 +85,6 @@ python gui/app.py
 Open your browser at [http://localhost:5000](http://localhost:5000) to configure and run a simulation.
 
 The results page now includes a table showing the average price of each good for every simulated day, allowing you to track price trends over time.
+
+The web interface persists trade history using SQLite. Click **Simulate** to
+advance by the selected number of days or **Reset Simulation** to start over.

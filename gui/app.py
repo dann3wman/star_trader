@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request
 
+from economy.market.history import SQLiteHistory
+
 # Ensure the project root is on the Python path when running this module
 # directly (e.g. `python gui/app.py`). This allows imports like
 # `from economy import Market` to succeed even if the current working
@@ -14,21 +16,28 @@ if __package__ is None:  # pragma: no cover - executed only when run directly
 
 from economy import Market
 
+# Use a persistent SQLite database to store simulation history
+history = SQLiteHistory()
+
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        if 'reset' in request.form:
+            history.reset()
+            return render_template('index.html', message='Simulation reset.')
+
         num_agents = int(request.form.get('num_agents', 9))
         days = int(request.form.get('days', 1))
-        market = Market(num_agents=num_agents)
+        market = Market(num_agents=num_agents, history=history)
         market.simulate(days)
 
         # Collect aggregated statistics and daily price history
-        hist = market.history(days)
+        hist = history.history(days)
         results = {}
         for good in hist:
-            low, high, current, ratio = market.aggregate(good, days)
+            low, high, current, ratio = history.aggregate(good, days)
             # Extract mean price for each day (may be None if no trades)
             prices = [trade.mean for trade in hist[good]]
             results[good] = {
@@ -39,7 +48,12 @@ def index():
                 'prices': prices,
             }
 
-        return render_template('results.html', results=results, days=days)
+        return render_template(
+            'results.html',
+            results=results,
+            days=days,
+            day_number=history.day_number,
+        )
     return render_template('index.html')
 
 if __name__ == '__main__':
