@@ -12,7 +12,27 @@ class Market(object):
     _book = None
     _history = None
 
-    def __init__(self, num_agents=15, history=None):
+    def __init__(self, num_agents=15, history=None, job_counts=None,
+                 initial_inv=10, initial_money=100):
+        """Create a new market instance.
+
+        Parameters
+        ----------
+        num_agents : int
+            Total number of agents to create if ``job_counts`` is not
+            provided.
+        history : MarketHistory, optional
+            History backend to use.
+        job_counts : dict, optional
+            Mapping of job names to the number of agents for that job. When
+            supplied ``num_agents`` is ignored and agents are created exactly
+            according to this mapping.
+        initial_inv : int
+            Starting inventory quantity for each agent.
+        initial_money : int
+            Starting money for each agent.
+        """
+
         self._agents = []
         self._book = OrderBook()
         self._history = history if history is not None else MarketHistory()
@@ -21,15 +41,39 @@ class Market(object):
         if not job_list:
             return
 
-        agents_per_job = num_agents // len(job_list)
-        leftover = num_agents % len(job_list)
+        if job_counts:
+            for job_name, count in job_counts.items():
+                try:
+                    recipe = jobs.by_name(job_name)
+                except KeyError:
+                    continue
 
-        for recipe in job_list:
-            for _ in range(agents_per_job):
-                self._agents.append(Agent(recipe, self))
+                for _ in range(int(count)):
+                    self._agents.append(
+                        Agent(recipe, self, initial_inv=initial_inv,
+                              initial_money=initial_money)
+                    )
 
-        for recipe in job_list[:leftover]:
-            self._agents.append(Agent(recipe, self))
+            # if no valid agents were added, fall back to uniform distribution
+            if not self._agents:
+                job_counts = None
+
+        if not job_counts:
+            agents_per_job = num_agents // len(job_list)
+            leftover = num_agents % len(job_list)
+
+            for recipe in job_list:
+                for _ in range(agents_per_job):
+                    self._agents.append(
+                        Agent(recipe, self, initial_inv=initial_inv,
+                              initial_money=initial_money)
+                    )
+
+            for recipe in job_list[:leftover]:
+                self._agents.append(
+                    Agent(recipe, self, initial_inv=initial_inv,
+                          initial_money=initial_money)
+                )
 
     def simulate(self, steps=1):
         # DEBUG
