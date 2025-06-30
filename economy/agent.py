@@ -75,6 +75,7 @@ class Agent(object):
     _name = None
     _initial_money = 0
     _trade_stats = None
+    _age = 0
     beliefs = None
 
     def __init__(self, recipe, market, initial_inv=10, initial_money=100):
@@ -86,6 +87,7 @@ class Agent(object):
         self._name = f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
 
         self._trade_stats = {}
+        self._age = 0
 
         self.beliefs = Beliefs()
 
@@ -110,6 +112,10 @@ class Agent(object):
     @property
     def money(self):
         return self._money
+
+    @property
+    def age(self):
+        return self._age
 
     @property
     def total_profit(self):
@@ -207,6 +213,10 @@ class Agent(object):
         bought = sum(v['bought'] for v in self._trade_stats.values())
         sold = sum(v['sold'] for v in self._trade_stats.values())
         return {'bought': bought, 'sold': sold}
+
+    def advance_day(self):
+        """Increment the agent's age by one day."""
+        self._age += 1
 
     def _determine_trade_quantity(self, good, base_qty, buying=False, default=0.75):
         if base_qty <= 0:

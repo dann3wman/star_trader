@@ -11,6 +11,7 @@ class Market(object):
     _agents = None
     _book = None
     _history = None
+    _lifespans = None
 
     def __init__(self, num_agents=15, history=None, job_counts=None,
                  initial_inv=10, initial_money=100):
@@ -36,6 +37,7 @@ class Market(object):
         self._agents = []
         self._book = OrderBook()
         self._history = history if history is not None else MarketHistory()
+        self._lifespans = []
 
         job_list = list(jobs.all())
         if not job_list:
@@ -95,6 +97,13 @@ class Market(object):
                 daily_sd[good] = trades
 
             self._history.close_day()
+
+            for agent in self._agents:
+                agent.advance_day()
+
+            dead_agents = [agent for agent in self._agents if agent.is_bankrupt]
+            for agent in dead_agents:
+                self._lifespans.append(agent.age)
 
             agents = [agent for agent in self._agents if not agent.is_bankrupt]
 
@@ -192,5 +201,21 @@ class Market(object):
                 'profit': agent.total_profit,
                 'trades': agent.trade_stats,
                 'trade_totals': agent.trade_totals,
+                'age': agent.age,
             })
         return stats
+
+    def overview_stats(self):
+        """Return high level market statistics."""
+        avg_age = 0
+        if self._agents:
+            avg_age = sum(a.age for a in self._agents) / len(self._agents)
+        avg_life = 0
+        if self._lifespans:
+            avg_life = sum(self._lifespans) / len(self._lifespans)
+        return {
+            'days_elapsed': self._history.day_number,
+            'active_agents': len(self._agents),
+            'average_age': avg_age,
+            'average_lifespan': avg_life,
+        }
