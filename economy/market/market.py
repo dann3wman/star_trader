@@ -1,11 +1,10 @@
 import random
 
 
-from economy.agent import Agent,dump_agent
-from economy import goods,jobs
+from economy.agent import Agent, dump_agent
+from economy import goods, jobs
 from economy.market.book import OrderBook
 from economy.market.history import MarketHistory
-from economy.offer import Ask,Bid
 
 
 class Market(object):
@@ -18,12 +17,22 @@ class Market(object):
         self._book = OrderBook()
         self._history = MarketHistory()
 
-        for recipe in jobs.all():
-            for i in range(0, num_agents, 3):
+        job_list = list(jobs.all())
+        if not job_list:
+            return
+
+        agents_per_job = num_agents // len(job_list)
+        leftover = num_agents % len(job_list)
+
+        for recipe in job_list:
+            for _ in range(agents_per_job):
                 self._agents.append(Agent(recipe, self))
 
+        for recipe in job_list[:leftover]:
+            self._agents.append(Agent(recipe, self))
+
     def simulate(self, steps=1):
-        ## DEBUG
+        # DEBUG
         for agent in self._agents:
             dump_agent(agent)
 
@@ -55,7 +64,8 @@ class Market(object):
                 if profit_by_job:
                     profits = []
                     for job in profit_by_job:
-                        profits.append((profit_by_job[job][0]/profit_by_job[job][1], job))
+                        avg = profit_by_job[job][0] / profit_by_job[job][1]
+                        profits.append((avg, job))
 
                     profits.sort(key=lambda x: x[0], reverse=True)
                     next_job = jobs.by_name(profits[0][1])
@@ -67,7 +77,7 @@ class Market(object):
 
             self._agents = agents
 
-        ## DEBUG
+        # DEBUG
         for agent in self._agents:
             dump_agent(agent)
 
@@ -81,10 +91,10 @@ class Market(object):
 
         for good in goods.all():
             prices = []
-            errs = [[],[]]
+            errs = [[], []]
             volumes = []
 
-            days = list(range(1,len(hist[good])+1))
+            days = list(range(1, len(hist[good]) + 1))
 
             for trades in hist[good]:
                 if trades.mean is not None:
@@ -123,4 +133,3 @@ class Market(object):
 
     def aggregate(self, good, depth=None):
         return self._history.aggregate(good, depth)
-
