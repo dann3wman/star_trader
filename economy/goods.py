@@ -23,6 +23,6 @@ class Good(namedtuple('Good', ['name','size'])):
 
 
 with open('data/goods.yml') as fh:
-    for good in yaml.load(fh):
+    for good in yaml.safe_load(fh):
         Good(**good)
 

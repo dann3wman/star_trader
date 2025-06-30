@@ -78,6 +78,6 @@ class Job(object):
 
 
 with open('data/jobs.yml') as fh:
-    for job in yaml.load(fh):
+    for job in yaml.safe_load(fh):
         Job(**job)
 
