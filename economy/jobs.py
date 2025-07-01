@@ -114,45 +114,43 @@ def _load_jobs() -> None:
         ],
     )
 
-    session = db.get_session()
-    rows = session.execute(select(db.JobsTable.name, db.JobsTable.job_limit)).all()
-    if not rows:
-        with open(os.path.join("data", "jobs.yml")) as fh:
-            data = yaml.safe_load(fh)
-        for job in data:
-            session.add(db.JobsTable(name=job["name"], job_limit=job.get("limit")))
-            for step in job.get("inputs", []):
-                session.add(db.JobInput(job=job["name"], good=step["good"], qty=step["qty"]))
-            for step in job.get("outputs", []):
-                session.add(db.JobOutput(job=job["name"], good=step["good"], qty=step["qty"]))
-            for tool in job.get("tools", []):
-                session.add(
-                    db.JobTool(
-                        job=job["name"],
-                        tool=tool["tool"],
-                        qty=tool["qty"],
-                        break_chance=tool["break_chance"],
-                    )
-                )
-        session.commit()
+    with db.session_scope() as session:
         rows = session.execute(select(db.JobsTable.name, db.JobsTable.job_limit)).all()
+        if not rows:
+            with open(os.path.join("data", "jobs.yml")) as fh:
+                data = yaml.safe_load(fh)
+            for job in data:
+                session.add(db.JobsTable(name=job["name"], job_limit=job.get("limit")))
+                for step in job.get("inputs", []):
+                    session.add(db.JobInput(job=job["name"], good=step["good"], qty=step["qty"]))
+                for step in job.get("outputs", []):
+                    session.add(db.JobOutput(job=job["name"], good=step["good"], qty=step["qty"]))
+                for tool in job.get("tools", []):
+                    session.add(
+                        db.JobTool(
+                            job=job["name"],
+                            tool=tool["tool"],
+                            qty=tool["qty"],
+                            break_chance=tool["break_chance"],
+                        )
+                    )
+            session.commit()
+            rows = session.execute(select(db.JobsTable.name, db.JobsTable.job_limit)).all()
 
-    for name, job_limit in rows:
-        inputs = [
-            {"good": r.good, "qty": r.qty}
-            for r in session.query(db.JobInput).filter_by(job=name).all()
-        ]
-        outputs = [
-            {"good": r.good, "qty": r.qty}
-            for r in session.query(db.JobOutput).filter_by(job=name).all()
-        ]
-        tools = [
-            {"tool": r.tool, "qty": r.qty, "break_chance": r.break_chance}
-            for r in session.query(db.JobTool).filter_by(job=name).all()
-        ]
-        Job(name=name, inputs=inputs, outputs=outputs, tools=tools, limit=job_limit)
-
-    session.close()
+        for name, job_limit in rows:
+            inputs = [
+                {"good": r.good, "qty": r.qty}
+                for r in session.query(db.JobInput).filter_by(job=name).all()
+            ]
+            outputs = [
+                {"good": r.good, "qty": r.qty}
+                for r in session.query(db.JobOutput).filter_by(job=name).all()
+            ]
+            tools = [
+                {"tool": r.tool, "qty": r.qty, "break_chance": r.break_chance}
+                for r in session.query(db.JobTool).filter_by(job=name).all()
+            ]
+            Job(name=name, inputs=inputs, outputs=outputs, tools=tools, limit=job_limit)
 
 
 _load_jobs()

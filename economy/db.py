@@ -1,4 +1,5 @@
 import os
+from contextlib import contextmanager
 from sqlalchemy import create_engine, Column, String, Integer, Float
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -15,6 +16,16 @@ Base = declarative_base()
 def get_session():
     """Return a new SQLAlchemy session bound to the shared engine."""
     return SessionLocal()
+
+
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations."""
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 class GoodsTable(Base):
