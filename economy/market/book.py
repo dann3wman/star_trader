@@ -32,7 +32,7 @@ class OrderBook(object):
         for order in orders:
             self.add_order(order)
 
-    def resolve_orders(self, good):
+    def resolve_orders(self, good, record_trade=None, day=None):
         asks = self._asks.get(good, [])
         bids = self._bids.get(good, [])
 
@@ -77,6 +77,12 @@ class OrderBook(object):
             ask.agent.give_items(good, qty, bid.agent)
             bid.agent.record_purchase(good, qty)
             ask.agent.record_sale(good, qty)
+
+            if record_trade:
+                if day is not None:
+                    record_trade(day, bid.agent.name, ask.agent.name, good, qty, price)
+                else:
+                    record_trade(bid.agent.name, ask.agent.name, good, qty, price)
 
             bid.agent.beliefs.update(good, price)
             ask.agent.beliefs.update(good, price)

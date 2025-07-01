@@ -138,7 +138,11 @@ class Market(object):
     def _resolve_all_orders(self):
         daily_sd = {}
         for good in goods.all():
-            trades = self._book.resolve_orders(good)
+            trades = self._book.resolve_orders(
+                good,
+                record_trade=self._history.record_trade,
+                day=self._history.day_number,
+            )
             self._history.add_trades(good, trades)
             daily_sd[good] = trades
         return daily_sd

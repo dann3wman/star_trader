@@ -70,6 +70,10 @@ class MarketHistory(object):
 
         return hist
 
+    def record_trade(self, day, buyer, seller, good, qty, price):
+        """Record a single trade. Base implementation is a no-op."""
+        pass
+
     @lru_cache(maxsize=64)
     def aggregate(self, good, depth=None):
         if self._day is not None:
@@ -136,6 +140,17 @@ class SQLiteHistory(MarketHistory):
                     demand INTEGER
                 )"""
             )
+            self._conn.execute(
+                """CREATE TABLE IF NOT EXISTS trade_log(
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    day INTEGER,
+                    good TEXT,
+                    qty INTEGER,
+                    price INTEGER,
+                    buyer TEXT,
+                    seller TEXT
+                )"""
+            )
             self._conn.commit()
 
         super().__init__(max_depth=max_depth)
@@ -178,10 +193,26 @@ class SQLiteHistory(MarketHistory):
                 )
             self._conn.commit()
 
+    def record_trade(self, day, buyer, seller, good, qty, price):
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO trade_log(day, good, qty, price, buyer, seller) VALUES (?,?,?,?,?,?)",
+                (
+                    day,
+                    str(good),
+                    qty,
+                    price,
+                    buyer,
+                    seller,
+                ),
+            )
+            self._conn.commit()
+
     def reset(self):
         """Clear all data from the database and memory."""
         with self._lock:
             self._conn.execute("DELETE FROM trades")
+            self._conn.execute("DELETE FROM trade_log")
             self._conn.commit()
         self._history = {good: [] for good in goods.all()}
         self._day_number = 0
