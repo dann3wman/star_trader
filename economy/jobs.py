@@ -1,5 +1,7 @@
-from collections import namedtuple
 import os
+from dataclasses import dataclass
+from typing import Dict, Iterable, Iterator, List, Optional, Tuple
+
 import yaml
 from sqlalchemy import select
 
@@ -9,24 +11,42 @@ from . import db
 from . import goods
 
 
-_by_name = {}
-def by_name(name):
+_by_name: Dict[str, "Job"] = {}
+
+def by_name(name: str) -> "Job":
     return _by_name[name.lower()]
 
-_jobs = []
-def all():
+_jobs: List["Job"] = []
+
+def all() -> Iterator["Job"]:
     for job in _jobs:
         yield job
 
 
-JobStep = namedtuple('JobStep', ['good','qty'])
-JobTool = namedtuple('JobTool', ['tool','qty','break_chance'])
+@dataclass(slots=True)
+class JobStep:
+    good: goods.Good
+    qty: int
+
+
+@dataclass(slots=True)
+class JobTool:
+    tool: goods.Good
+    qty: int
+    break_chance: float
 
 
 class Job(object):
-    __slots__ = ('__inputs','__outputs','__tools','__name','__limit')
+    __slots__ = ("__inputs", "__outputs", "__tools", "__name", "__limit")
 
-    def __init__(self, name, inputs=None, outputs=None, tools=None, limit=None):
+    def __init__(
+        self,
+        name: str,
+        inputs: Optional[Iterable[Dict[str, object]]] = None,
+        outputs: Optional[Iterable[Dict[str, object]]] = None,
+        tools: Optional[Iterable[Dict[str, object]]] = None,
+        limit: Optional[int] = None,
+    ) -> None:
         self.__name = name
         self.__limit = limit
 
@@ -53,23 +73,23 @@ class Job(object):
         _jobs.append(self)
 
     @property
-    def inputs(self):
+    def inputs(self) -> Tuple[JobStep, ...]:
         return self.__inputs
 
     @property
-    def outputs(self):
+    def outputs(self) -> Tuple[JobStep, ...]:
         return self.__outputs
 
     @property
-    def tools(self):
+    def tools(self) -> Tuple[JobTool, ...]:
         return self.__tools
 
     @property
-    def limit(self):
+    def limit(self) -> Optional[int]:
         return self.__limit
 
     @property
-    def runs(self):
+    def runs(self) -> Iterator[bool]:
         if self.limit is None:
             while True:
                 yield True
@@ -82,7 +102,7 @@ class Job(object):
 
 
 
-def _load_jobs():
+def _load_jobs() -> None:
     """Load job definitions from the database, using YAML as a seed if empty."""
     db.Base.metadata.create_all(
         bind=db.engine,

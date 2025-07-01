@@ -50,13 +50,13 @@ class Agent(object):
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
-        qty = round(initial_inv / (len(self._recipe.inputs)+len(self._recipe.outputs)))
-        for good,*_ in self._recipe.inputs+self._recipe.outputs:
-            self._inventory.set_qty(good, qty)
+        qty = round(initial_inv / (len(self._recipe.inputs) + len(self._recipe.outputs)))
+        for step in list(self._recipe.inputs) + list(self._recipe.outputs):
+            self._inventory.set_qty(step.good, qty)
 
-        for tool,qty,break_chance in self._recipe.tools:
+        for tool in self._recipe.tools:
             # Start with all necessary tools
-            self._inventory.set_qty(tool,qty)
+            self._inventory.set_qty(tool.tool, tool.qty)
 
     @property
     def job(self):
@@ -95,54 +95,54 @@ class Agent(object):
             if not self._can_produce():
                 return
 
-            for good,qty in self._recipe.inputs:
+            for step in self._recipe.inputs:
                 # Deduct any required input
-                self._inventory.remove_item(good, qty)
+                self._inventory.remove_item(step.good, step.qty)
 
-            for good,qty in self._recipe.outputs:
+            for step in self._recipe.outputs:
                 # Add any output
-                self._inventory.add_item(good, qty)
+                self._inventory.add_item(step.good, step.qty)
 
-            for tool,qty,break_chance in self._recipe.tools:
+            for tool in self._recipe.tools:
                 # Check for tool breakage
-                if random.random() < break_chance:
-                    self._inventory.remove_item(tool, 1)
+                if random.random() < tool.break_chance:
+                    self._inventory.remove_item(tool.tool, 1)
 
     def make_offers(self):
         # From an Agent's perspective, making offers is the start of a round
         self._money_last_round = self._money
 
         space = self._inventory.available_space()
-        for good,qty in self._recipe.inputs:
+        for step in self._recipe.inputs:
             # Input into our recipe, make a bid to buy
             # We deliberately do not account for qty we're selling because
             # we don't know how many we'll actually sell in this round
             # TODO: Need to adjust Bid qty to avoid overflowing inventory
             #       if an Agent requires multiple inputs
             bid_qty = self._determine_trade_quantity(
-                good,
+                step.good,
                 space,
                 buying=True,
             )
 
             if bid_qty > 0:
-                yield Bid(good, bid_qty, self.beliefs.choose_price(good), self)
+                yield Bid(step.good, bid_qty, self.beliefs.choose_price(step.good), self)
 
-        for good,qty in self._recipe.outputs:
+        for step in self._recipe.outputs:
             # We produce these, sell 'em
             ask_qty = self._determine_trade_quantity(
-                good,
-                self._inventory.query_inventory(good),
+                step.good,
+                self._inventory.query_inventory(step.good),
             )
 
             if ask_qty > 0:
-                yield Ask(good, ask_qty, self.beliefs.choose_price(good), self)
+                yield Ask(step.good, ask_qty, self.beliefs.choose_price(step.good), self)
 
-        for tool,qty,break_chance in self._recipe.tools:
+        for tool in self._recipe.tools:
             # Check if we need to buy any tools
-            have = self._inventory.query_inventory(tool)
-            if have < qty:
-                yield Bid(tool, qty-have, self.beliefs.choose_price(tool), self)
+            have = self._inventory.query_inventory(tool.tool)
+            if have < tool.qty:
+                yield Bid(tool.tool, tool.qty - have, self.beliefs.choose_price(tool.tool), self)
 
     def give_money(self, amt, other):
         self._money -= amt
@@ -198,23 +198,23 @@ class Agent(object):
     def _can_produce(self):
         space = self._inventory.available_space()
 
-        for good,qty in self._recipe.inputs:
+        for step in self._recipe.inputs:
             # Ensure there's enough input
-            if qty > self._inventory.query_inventory(good):
+            if step.qty > self._inventory.query_inventory(step.good):
                 return False
 
             # This will be consumed in production, freeing up space
-            space += qty
+            space += step.qty
 
-        for good,qty in self._recipe.outputs:
+        for step in self._recipe.outputs:
             # Ensure there's room for the output
-            space -= qty
+            space -= step.qty
             if space < 0:
                 return False
 
-        for tool,qty,break_chance in self._recipe.tools:
+        for tool in self._recipe.tools:
             # Ensure we have our tools
-            if qty > self._inventory.query_inventory(tool):
+            if tool.qty > self._inventory.query_inventory(tool.tool):
                 return False
 
         return True
