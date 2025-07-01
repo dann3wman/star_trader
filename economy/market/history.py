@@ -11,7 +11,7 @@ from economy import goods
 logger = logging.getLogger(__name__)
 
 
-Trades = namedtuple('Trades', ['volume', 'low', 'high', 'mean', 'supply', 'demand'])
+Trades = namedtuple("Trades", ["volume", "low", "high", "mean", "supply", "demand"])
 
 
 class MarketHistory(object):
@@ -26,7 +26,9 @@ class MarketHistory(object):
 
     def open_day(self):
         if self._day is not None:
-            logger.warning('Opening new day before previous day was properly closed. Its trades have been lost. You must call close_day() to commit trades to the history.')
+            logger.warning(
+                "Opening new day before previous day was properly closed. Its trades have been lost. You must call close_day() to commit trades to the history."
+            )
 
         self._day_number += 1
         self._day = {}
@@ -35,7 +37,9 @@ class MarketHistory(object):
 
     def add_trades(self, good, trades):
         if self._day is None:
-            logger.warning('Implicitly opening a new day to record this trade. You should call open_day() yourself.')
+            logger.warning(
+                "Implicitly opening a new day to record this trade. You should call open_day() yourself."
+            )
             self.open_day()
 
         self._day[good] = trades
@@ -46,7 +50,7 @@ class MarketHistory(object):
 
             # Be lazy about our garbage collection
             if len(self._history[good]) > 1.5 * self._max_depth:
-                self._history[good] = self._history[good][-self._max_depth:]
+                self._history[good] = self._history[good][-self._max_depth :]
 
         self._day = None
 
@@ -55,7 +59,7 @@ class MarketHistory(object):
 
     def history(self, depth=None):
         if self._day is not None:
-            logger.warning('Day has been left open. It will not appear in the history.')
+            logger.warning("Day has been left open. It will not appear in the history.")
 
         if depth is None or depth > self._max_depth:
             depth = self._max_depth
@@ -69,7 +73,7 @@ class MarketHistory(object):
     @lru_cache(maxsize=64)
     def aggregate(self, good, depth=None):
         if self._day is not None:
-            logger.warning('Day has been left open. It will not appear in the history.')
+            logger.warning("Day has been left open. It will not appear in the history.")
 
         if depth is None or depth > self._max_depth:
             depth = self._max_depth
@@ -97,7 +101,7 @@ class MarketHistory(object):
             current = trades.mean
 
         try:
-            ratio = (current-low)/(high-low)
+            ratio = (current - low) / (high - low)
         except TypeError:
             ratio = None
         except ZeroDivisionError:
@@ -109,7 +113,6 @@ class MarketHistory(object):
     @property
     def day_number(self):
         return self._day_number
-
 
 
 class SQLiteHistory(MarketHistory):
@@ -182,4 +185,3 @@ class SQLiteHistory(MarketHistory):
             self._conn.commit()
         self._history = {good: [] for good in goods.all()}
         self._day_number = 0
-

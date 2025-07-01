@@ -15,9 +15,15 @@ class Market(object):
     _history = None
     _lifespans = None
 
-    def __init__(self, num_agents=15, history=None, job_counts=None,
-                 initial_inv=INITIAL_INVENTORY, initial_money=INITIAL_MONEY,
-                 daily_tax=DAILY_TAX):
+    def __init__(
+        self,
+        num_agents=15,
+        history=None,
+        job_counts=None,
+        initial_inv=INITIAL_INVENTORY,
+        initial_money=INITIAL_MONEY,
+        daily_tax=DAILY_TAX,
+    ):
         """Create a new market instance.
 
         Parameters
@@ -60,8 +66,12 @@ class Market(object):
 
                 for _ in range(int(count)):
                     self._agents.append(
-                        Agent(recipe, self, initial_inv=initial_inv,
-                              initial_money=initial_money)
+                        Agent(
+                            recipe,
+                            self,
+                            initial_inv=initial_inv,
+                            initial_money=initial_money,
+                        )
                     )
 
             # if no valid agents were added, fall back to uniform distribution
@@ -75,14 +85,22 @@ class Market(object):
             for recipe in job_list:
                 for _ in range(agents_per_job):
                     self._agents.append(
-                        Agent(recipe, self, initial_inv=initial_inv,
-                              initial_money=initial_money)
+                        Agent(
+                            recipe,
+                            self,
+                            initial_inv=initial_inv,
+                            initial_money=initial_money,
+                        )
                     )
 
             for recipe in job_list[:leftover]:
                 self._agents.append(
-                    Agent(recipe, self, initial_inv=initial_inv,
-                          initial_money=initial_money)
+                    Agent(
+                        recipe,
+                        self,
+                        initial_inv=initial_inv,
+                        initial_money=initial_money,
+                    )
                 )
 
     def simulate(self, steps=1):
@@ -215,7 +233,9 @@ class Market(object):
                 col=1,
             )
 
-            fig.update_layout(height=500, width=700, title=f"{len(days)}-Day History for {good}")
+            fig.update_layout(
+                height=500, width=700, title=f"{len(days)}-Day History for {good}"
+            )
             fig.write_html(f"{good}.html", include_plotlyjs="cdn")
 
     def history(self, depth=None):
@@ -227,15 +247,17 @@ class Market(object):
     def agent_stats(self):
         stats = []
         for agent in self._agents:
-            stats.append({
-                'name': agent.name,
-                'job': agent.job,
-                'money': agent.money,
-                'profit': agent.total_profit,
-                'trades': agent.trade_stats,
-                'trade_totals': agent.trade_totals,
-                'age': agent.age,
-            })
+            stats.append(
+                {
+                    "name": agent.name,
+                    "job": agent.job,
+                    "money": agent.money,
+                    "profit": agent.total_profit,
+                    "trades": agent.trade_stats,
+                    "trade_totals": agent.trade_totals,
+                    "age": agent.age,
+                }
+            )
         return stats
 
     def overview_stats(self):
@@ -247,8 +269,8 @@ class Market(object):
         if self._lifespans:
             avg_life = sum(self._lifespans) / len(self._lifespans)
         return {
-            'days_elapsed': self._history.day_number,
-            'active_agents': len(self._agents),
-            'average_age': avg_age,
-            'average_lifespan': avg_life,
+            "days_elapsed": self._history.day_number,
+            "active_agents": len(self._agents),
+            "average_age": avg_age,
+            "average_lifespan": avg_life,
         }

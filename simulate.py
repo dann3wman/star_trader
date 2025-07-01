@@ -8,10 +8,21 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run or control the Star Trader simulation")
-    parser.add_argument("--step", type=int, default=1, help="Number of days to simulate (default: 1)")
-    parser.add_argument("--reset", action="store_true", help="Reset stored simulation data")
-    parser.add_argument("--num-agents", type=int, default=9, help="Number of agents when starting a new simulation")
+    parser = argparse.ArgumentParser(
+        description="Run or control the Star Trader simulation"
+    )
+    parser.add_argument(
+        "--step", type=int, default=1, help="Number of days to simulate (default: 1)"
+    )
+    parser.add_argument(
+        "--reset", action="store_true", help="Reset stored simulation data"
+    )
+    parser.add_argument(
+        "--num-agents",
+        type=int,
+        default=9,
+        help="Number of agents when starting a new simulation",
+    )
     parser.add_argument("--db", default="sim.db", help="SQLite database file")
     args = parser.parse_args()
 

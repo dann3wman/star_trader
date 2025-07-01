@@ -13,10 +13,13 @@ from . import goods
 
 _by_name: Dict[str, "Job"] = {}
 
+
 def by_name(name: str) -> "Job":
     return _by_name[name.lower()]
 
+
 _jobs: List["Job"] = []
+
 
 def all() -> Iterator["Job"]:
     for job in _jobs:
@@ -56,17 +59,17 @@ class Job(object):
 
         self.__inputs = ()
         for step in inputs:
-            step['good'] = goods.by_name(step['good'])
+            step["good"] = goods.by_name(step["good"])
             self.__inputs += (JobStep(**step),)
 
         self.__outputs = ()
         for step in outputs:
-            step['good'] = goods.by_name(step['good'])
+            step["good"] = goods.by_name(step["good"])
             self.__outputs += (JobStep(**step),)
 
         self.__tools = ()
         for tool in tools:
-            tool['tool'] = goods.by_name(tool['tool'])
+            tool["tool"] = goods.by_name(tool["tool"])
             self.__tools += (JobTool(**tool),)
 
         _by_name[name.lower()] = self
@@ -101,7 +104,6 @@ class Job(object):
         return self.__name
 
 
-
 def _load_jobs() -> None:
     """Load job definitions from the database, using YAML as a seed if empty."""
     db.Base.metadata.create_all(
@@ -122,9 +124,15 @@ def _load_jobs() -> None:
             for job in data:
                 session.add(db.JobsTable(name=job["name"], job_limit=job.get("limit")))
                 for step in job.get("inputs", []):
-                    session.add(db.JobInput(job=job["name"], good=step["good"], qty=step["qty"]))
+                    session.add(
+                        db.JobInput(job=job["name"], good=step["good"], qty=step["qty"])
+                    )
                 for step in job.get("outputs", []):
-                    session.add(db.JobOutput(job=job["name"], good=step["good"], qty=step["qty"]))
+                    session.add(
+                        db.JobOutput(
+                            job=job["name"], good=step["good"], qty=step["qty"]
+                        )
+                    )
                 for tool in job.get("tools", []):
                     session.add(
                         db.JobTool(
@@ -135,7 +143,9 @@ def _load_jobs() -> None:
                         )
                     )
             session.commit()
-            rows = session.execute(select(db.JobsTable.name, db.JobsTable.job_limit)).all()
+            rows = session.execute(
+                select(db.JobsTable.name, db.JobsTable.job_limit)
+            ).all()
 
         for name, job_limit in rows:
             inputs = [
@@ -154,4 +164,3 @@ def _load_jobs() -> None:
 
 
 _load_jobs()
-
