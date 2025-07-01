@@ -38,19 +38,18 @@ class Good:
 def _load_goods():
     """Load goods from the database, populating tables from YAML if needed."""
     db.Base.metadata.create_all(bind=db.engine, tables=[db.GoodsTable.__table__])
-    session = db.get_session()
-    rows = session.execute(select(db.GoodsTable.name, db.GoodsTable.size)).all()
-    if not rows:
-        with open(os.path.join("data", "goods.yml")) as fh:
-            data = yaml.safe_load(fh)
-        objs = [db.GoodsTable(name=g["name"], size=g["size"]) for g in data]
-        session.add_all(objs)
-        session.commit()
-        rows = [(g["name"], g["size"]) for g in data]
+    with db.session_scope() as session:
+        rows = session.execute(select(db.GoodsTable.name, db.GoodsTable.size)).all()
+        if not rows:
+            with open(os.path.join("data", "goods.yml")) as fh:
+                data = yaml.safe_load(fh)
+            objs = [db.GoodsTable(name=g["name"], size=g["size"]) for g in data]
+            session.add_all(objs)
+            session.commit()
+            rows = [(g["name"], g["size"]) for g in data]
 
-    for name, size in rows:
-        Good(name=name, size=size)
-    session.close()
+        for name, size in rows:
+            Good(name=name, size=size)
 
 
 _load_goods()
