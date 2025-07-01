@@ -145,51 +145,56 @@ class Market(object):
             dump_agent(agent)
 
     def make_charts(self):
-        # TODO: Decide if these will be general dependencies, or if charts will
-        #       be an optional feature and thus these optional dependencies.
-        import matplotlib.pyplot as plt
-        import numpy as np
+        """Generate interactive charts for price and volume using Plotly."""
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
 
         hist = self.history()
 
         for good in goods.all():
+            days = list(range(1, len(hist[good]) + 1))
             prices = []
-            errs = [[], []]
+            low_err = []
+            high_err = []
             volumes = []
 
-            days = list(range(1, len(hist[good]) + 1))
-
             for trades in hist[good]:
+                prices.append(trades.mean)
                 if trades.mean is not None:
-                    prices.append(trades.mean)
-
-                    errs[0].append(trades.mean - trades.low)
-                    errs[1].append(trades.high - trades.mean)
+                    low_err.append(trades.mean - trades.low)
+                    high_err.append(trades.high - trades.mean)
                 else:
-                    prices.append(np.nan)
-
-                    errs[0].append(np.nan)
-                    errs[1].append(np.nan)
-
+                    low_err.append(None)
+                    high_err.append(None)
                 volumes.append(trades.volume or 0)
 
-            plt.figure()
+            fig = make_subplots(
+                rows=2,
+                cols=1,
+                shared_xaxes=True,
+                vertical_spacing=0.1,
+                subplot_titles=(f"{good} Price", f"{good} Volume"),
+            )
 
-            plt.suptitle('{}-Day History for {}'.format(days[-1], good))
+            fig.add_trace(
+                go.Scatter(
+                    x=days,
+                    y=prices,
+                    error_y=dict(array=high_err, arrayminus=low_err, type="data"),
+                    mode="lines+markers",
+                    name="Price",
+                ),
+                row=1,
+                col=1,
+            )
+            fig.add_trace(
+                go.Bar(x=days, y=volumes, name="Volume"),
+                row=2,
+                col=1,
+            )
 
-            ax1 = plt.subplot(211)
-            ax1.set_ylabel('Price')
-            ax1.set_xlabel('Day')
-            ax1.errorbar(days, prices, yerr=errs)
-
-            ax2 = plt.subplot(212, sharex=ax1)
-            ax2.set_ylabel('Volume')
-            ax2.bar(days, volumes)
-
-            plt.subplots_adjust(wspace=0, hspace=0)
-
-            plt.savefig('{}.png'.format(good), bbox_inches='tight')
-            plt.close()
+            fig.update_layout(height=500, width=700, title=f"{len(days)}-Day History for {good}")
+            fig.write_html(f"{good}.html", include_plotlyjs="cdn")
 
     def history(self, depth=None):
         return self._history.history(depth)
