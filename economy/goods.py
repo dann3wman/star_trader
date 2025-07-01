@@ -1,6 +1,7 @@
 from collections import namedtuple
 import os
 import yaml
+from sqlalchemy import select
 
 from . import db
 
@@ -30,27 +31,20 @@ class Good(namedtuple('Good', ['name','size'])):
 
 def _load_goods():
     """Load goods from the database, populating tables from YAML if needed."""
-    conn = db.get_connection()
-    with conn:
-        conn.execute(
-            """CREATE TABLE IF NOT EXISTS goods(
-                    name TEXT PRIMARY KEY,
-                    size REAL
-                )"""
-        )
-        cur = conn.execute("SELECT name, size FROM goods")
-        rows = cur.fetchall()
-        if not rows:
-            with open(os.path.join("data", "goods.yml")) as fh:
-                data = yaml.safe_load(fh)
-            conn.executemany(
-                "INSERT INTO goods(name, size) VALUES (?, ?)",
-                [(g["name"], g["size"]) for g in data],
-            )
-            rows = [(g["name"], g["size"]) for g in data]
+    db.Base.metadata.create_all(bind=db.engine, tables=[db.GoodsTable.__table__])
+    session = db.get_session()
+    rows = session.execute(select(db.GoodsTable.name, db.GoodsTable.size)).all()
+    if not rows:
+        with open(os.path.join("data", "goods.yml")) as fh:
+            data = yaml.safe_load(fh)
+        objs = [db.GoodsTable(name=g["name"], size=g["size"]) for g in data]
+        session.add_all(objs)
+        session.commit()
+        rows = [(g["name"], g["size"]) for g in data]
 
     for name, size in rows:
         Good(name=name, size=size)
+    session.close()
 
 
 _load_goods()
