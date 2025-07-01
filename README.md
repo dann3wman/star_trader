@@ -88,3 +88,4 @@ Open your browser at [http://localhost:5000](http://localhost:5000) to configure
 
 The results page now includes a table showing the average price of each good for every simulated day, allowing you to track price trends over time.
 It also lists statistics for each agent, including their final money and total profit, so you can compare how well different strategies performed. An additional table breaks down how many units of each good every agent bought and sold during the run. The price and volume charts on this page are rendered with **Plotly** so you can hover and zoom for a closer look at the data.
+\nSee **REFACTORING.md** for ideas on improving the codebase.
