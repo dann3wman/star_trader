@@ -1,9 +1,12 @@
 import random
+import logging
 
 from .beliefs import Beliefs
 from .offer import Ask, Bid, MIN_PRICE
 from .inventory import Inventory
 from .names import FIRST_NAMES, LAST_NAMES
+
+logger = logging.getLogger(__name__)
 
 
 def dump_agent(agent):
@@ -14,12 +17,14 @@ def dump_agent(agent):
                 qty = agent._inventory.query_inventory(item),
                 )
 
-    print('{agent},{job}{inv},{money}¤'.format(
-        agent = agent._name,
-        job = agent.job,
-        inv = inv,
-        money = agent._money,
-        ))
+    logger.debug(
+        '{agent},{job}{inv},{money}¤'.format(
+            agent=agent._name,
+            job=agent.job,
+            inv=inv,
+            money=agent._money,
+        )
+    )
 
 
 class Agent(object):

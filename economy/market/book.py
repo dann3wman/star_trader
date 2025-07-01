@@ -1,8 +1,11 @@
 import random
+import logging
 
 
 from economy.market.history import Trades
 from economy.offer import Ask,Bid
+
+logger = logging.getLogger(__name__)
 
 
 class OrderBook(object):
@@ -78,11 +81,12 @@ class OrderBook(object):
             bid.agent.beliefs.update(good, price)
             ask.agent.beliefs.update(good, price)
 
-            print("Bid: {} units of {} for {}; Ask: {} units of {} for {}; Cleared {} units for {}".format(
+            logger.debug(
+                "Bid: %s units of %s for %s; Ask: %s units of %s for %s; Cleared %s units for %s",
                 bid.units, bid.good, bid.unit_price,
                 ask.units, ask.good, ask.unit_price,
                 qty, price,
-                ))
+            )
 
             ask.units -= qty
             bid.units -= qty
@@ -106,14 +110,15 @@ class OrderBook(object):
                 bid = bids.pop()
                 bid.agent.beliefs.update(good, unit_price, False)
 
-            print("Sold {units} {good} at an average price of {price}".format(
-                units=units_sold,
-                good=good,
-                price=unit_price,
-            ))
+            logger.info(
+                "Sold %s %s at an average price of %s",
+                units_sold,
+                good,
+                unit_price,
+            )
         else:
             unit_price = None
-            print("0 units of {good} were traded today".format(good=good))
+            logger.info("0 units of %s were traded today", good)
 
         return Trades(low=low, high=high, volume=units_sold, mean=unit_price, supply=supply, demand=demand)
 
