@@ -1,27 +1,63 @@
 import os
-import sqlite3
+from sqlalchemy import create_engine, Column, String, Integer, Float
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Reuse the same database file as the simulation history so that all
 # persistent data lives together. Users can override the path via the
 # STAR_TRADER_DB environment variable.
 DB_PATH = os.environ.get("STAR_TRADER_DB", "sim.db")
 
+engine = create_engine(f"sqlite:///{DB_PATH}")
+SessionLocal = sessionmaker(bind=engine)
+Base = declarative_base()
 
-def get_connection():
-    """Return a connection to the shared SQLite database."""
-    return sqlite3.connect(DB_PATH)
+
+def get_session():
+    """Return a new SQLAlchemy session bound to the shared engine."""
+    return SessionLocal()
+
+
+class GoodsTable(Base):
+    __tablename__ = "goods"
+    name = Column(String, primary_key=True)
+    size = Column(Float)
+
+
+class JobsTable(Base):
+    __tablename__ = "jobs"
+    name = Column(String, primary_key=True)
+    job_limit = Column(Integer)
+
+
+class JobInput(Base):
+    __tablename__ = "job_inputs"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job = Column(String)
+    good = Column(String)
+    qty = Column(Integer)
+
+
+class JobOutput(Base):
+    __tablename__ = "job_outputs"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job = Column(String)
+    good = Column(String)
+    qty = Column(Integer)
+
+
+class JobTool(Base):
+    __tablename__ = "job_tools"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job = Column(String)
+    tool = Column(String)
+    qty = Column(Integer)
+    break_chance = Column(Float)
 
 
 def rebuild_database():
     """Recreate goods and jobs tables from YAML files."""
-    conn = get_connection()
-    with conn:
-        conn.execute("DROP TABLE IF EXISTS job_tools")
-        conn.execute("DROP TABLE IF EXISTS job_outputs")
-        conn.execute("DROP TABLE IF EXISTS job_inputs")
-        conn.execute("DROP TABLE IF EXISTS jobs")
-        conn.execute("DROP TABLE IF EXISTS goods")
-    conn.close()
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
     # Clear any cached data and reload from YAML
     from . import goods as goods_mod, jobs as jobs_mod

@@ -4,8 +4,8 @@
     <title>Results</title>
     <!-- Include the Foundation CSS framework -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
-    <!-- Chart.js for interactive charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Plotly for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0"></script>
   </head>
   <body class="grid-container">
     <h1>Results for {{ days }} day(s)</h1>
@@ -30,8 +30,8 @@
     {% set idx = 1 %}
     {% for good, data in results.items() %}
     <h3>{{ good }}</h3>
-    <canvas id="priceChart-{{ idx }}" width="400" height="200"></canvas>
-    <canvas id="volumeChart-{{ idx }}" width="400" height="200"></canvas>
+    <div id="priceChart-{{ idx }}" style="width:400px;height:250px;"></div>
+    <div id="volumeChart-{{ idx }}" style="width:400px;height:250px;"></div>
     {% set idx = idx + 1 %}
     {% endfor %}
 
@@ -115,36 +115,19 @@
     <script>
       const results = {{ results|tojson }};
       const days = {{ days }};
-      const labels = Array.from({length: days}, (_, i) => `Day ${i+1}`);
+      const labels = Array.from({length: days}, (_, i) => i + 1);
       let idx = 1;
       for (const [good, data] of Object.entries(results)) {
-        const priceCtx = document.getElementById(`priceChart-${idx}`).getContext('2d');
-        new Chart(priceCtx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: `${good} Price`,
-              data: data.prices,
-              fill: false,
-              borderColor: 'blue'
-            }]
-          },
-          options: {responsive: false}
-        });
-        const volCtx = document.getElementById(`volumeChart-${idx}`).getContext('2d');
-        new Chart(volCtx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: `${good} Volume`,
-              data: data.volumes,
-              backgroundColor: 'orange'
-            }]
-          },
-          options: {responsive: false}
-        });
+        Plotly.newPlot(
+          `priceChart-${idx}`,
+          [{ x: labels, y: data.prices, mode: 'lines+markers', name: `${good} Price` }],
+          { title: `${good} Price`, xaxis: { title: 'Day' }, yaxis: { title: 'Price' }, margin: { t: 30 } }
+        );
+        Plotly.newPlot(
+          `volumeChart-${idx}`,
+          [{ x: labels, y: data.volumes, type: 'bar', name: `${good} Volume` }],
+          { title: `${good} Volume`, xaxis: { title: 'Day' }, yaxis: { title: 'Volume' }, margin: { t: 30 } }
+        );
         idx++;
       }
     </script>

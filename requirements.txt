@@ -3,3 +3,5 @@ numpy
 matplotlib
 pytest
 flask
+sqlalchemy
+plotly
