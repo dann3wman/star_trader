@@ -1,5 +1,7 @@
-from collections import namedtuple
 import os
+from dataclasses import dataclass
+from typing import Dict, Iterator, List
+
 import yaml
 from sqlalchemy import select
 
@@ -7,20 +9,24 @@ from . import db
 
 
 
-_by_name = {}
+_by_name: Dict[str, "Good"] = {}
 
-def by_name(name):
+def by_name(name: str) -> "Good":
     return _by_name[name.lower()]
 
-_goods = []
-def all():
+_goods: List["Good"] = []
+
+def all() -> Iterator["Good"]:
     for good in _goods:
         yield good
 
 
-class Good(namedtuple('Good', ['name','size'])):
-    __slots__ = ()
-    def __init__(self, *args, **kwargs):
+@dataclass(slots=True, frozen=True)
+class Good:
+    name: str
+    size: float
+
+    def __post_init__(self) -> None:
         _by_name[self.name.lower()] = self
         _goods.append(self)
 
