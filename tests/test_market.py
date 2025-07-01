@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from economy.market.market import Market
+from economy.market.history import SQLiteHistory
 
 
 class TestMarketSimulation(unittest.TestCase):
@@ -24,6 +25,18 @@ class TestMarketSimulation(unittest.TestCase):
         market.simulate(2)
         stats = market.overview_stats()
         self.assertGreater(stats["average_lifespan"], 0)
+
+    def test_trade_logging(self):
+        history = SQLiteHistory(db_path=":memory:")
+        market = Market(num_agents=3, history=history)
+        market.simulate(1)
+        with history._lock:
+            cur = history._conn.execute("SELECT day FROM trade_log ORDER BY id LIMIT 1")
+            first_day = cur.fetchone()[0]
+            cur = history._conn.execute("SELECT COUNT(*) FROM trade_log")
+            count = cur.fetchone()[0]
+        self.assertGreater(count, 0)
+        self.assertEqual(first_day, 1)
 
 
 if __name__ == "__main__":
