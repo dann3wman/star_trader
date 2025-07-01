@@ -3,6 +3,8 @@ import random
 
 from economy.agent import Agent, dump_agent
 from economy import goods, jobs
+
+from config import INITIAL_INVENTORY, INITIAL_MONEY, DAILY_TAX
 from economy.market.book import OrderBook
 from economy.market.history import SQLiteHistory, MarketHistory
 
@@ -14,7 +16,8 @@ class Market(object):
     _lifespans = None
 
     def __init__(self, num_agents=15, history=None, job_counts=None,
-                 initial_inv=10, initial_money=100, daily_tax=1):
+                 initial_inv=INITIAL_INVENTORY, initial_money=INITIAL_MONEY,
+                 daily_tax=DAILY_TAX):
         """Create a new market instance.
 
         Parameters

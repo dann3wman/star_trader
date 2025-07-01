@@ -1,12 +1,9 @@
-import os
 from contextlib import contextmanager
 from sqlalchemy import create_engine, Column, String, Integer, Float
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Reuse the same database file as the simulation history so that all
-# persistent data lives together. Users can override the path via the
-# STAR_TRADER_DB environment variable.
-DB_PATH = os.environ.get("STAR_TRADER_DB", "sim.db")
+# Database path is configured via the shared config module
+from config import DB_PATH
 
 engine = create_engine(f"sqlite:///{DB_PATH}")
 SessionLocal = sessionmaker(bind=engine)

@@ -59,6 +59,22 @@ reset it entirely. Run `python simulate.py --step` to advance the existing
 simulation by one day or `python simulate.py --reset` to start over from
 scratch.
 
+### Configuration
+
+Runtime options such as the database path and default starting resources can be
+set through environment variables:
+
+```
+STAR_TRADER_DB              # SQLite database filename (default: sim.db)
+STAR_TRADER_INITIAL_MONEY   # Starting money for agents (default: 100)
+STAR_TRADER_INITIAL_INV     # Starting inventory per agent (default: 10)
+STAR_TRADER_INVENTORY_SIZE  # Inventory capacity for agents (default: 15)
+STAR_TRADER_DAILY_TAX       # Daily tax deducted from each agent (default: 1)
+```
+
+These values are loaded on startup via `config.py` and used across the
+application.
+
 ## Setup
 
 The project can be run inside a virtual environment to isolate its
