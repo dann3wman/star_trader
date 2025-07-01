@@ -5,6 +5,11 @@ from .beliefs import Beliefs
 from .offer import Ask, Bid, MIN_PRICE
 from .inventory import Inventory
 from .names import FIRST_NAMES, LAST_NAMES
+from config import (
+    INVENTORY_SIZE as DEFAULT_INVENTORY_SIZE,
+    INITIAL_INVENTORY,
+    INITIAL_MONEY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +33,7 @@ def dump_agent(agent):
 
 
 class Agent(object):
-    INVENTORY_SIZE = 15
+    INVENTORY_SIZE = DEFAULT_INVENTORY_SIZE
     _inventory = None
     _recipe = None
     _market = None
@@ -40,7 +45,8 @@ class Agent(object):
     _age = 0
     beliefs = None
 
-    def __init__(self, recipe, market, initial_inv=10, initial_money=100):
+    def __init__(self, recipe, market, initial_inv=INITIAL_INVENTORY,
+                 initial_money=INITIAL_MONEY):
         self._recipe = recipe
         self._market = market
         self._money = initial_money

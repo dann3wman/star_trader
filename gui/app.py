@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
-import os
+
+from config import DB_PATH, INITIAL_MONEY, INITIAL_INVENTORY
 
 # Ensure the project root is on the Python path when running this module
 # directly (e.g. `python gui/app.py`). This allows imports like
@@ -16,9 +17,10 @@ if __package__ is None:  # pragma: no cover - executed only when run directly
 from economy import Market, SQLiteHistory, jobs, rebuild_database
 
 # Persistent simulation support
-DB_PATH = os.environ.get("STAR_TRADER_DB", "sim.db")
 _history = SQLiteHistory(DB_PATH)
-_persistent_market = Market(num_agents=9, history=_history)
+_persistent_market = Market(num_agents=9, history=_history,
+                           initial_inv=INITIAL_INVENTORY,
+                           initial_money=INITIAL_MONEY)
 
 
 app = Flask(__name__)
@@ -30,14 +32,14 @@ def index():
             data = request.get_json()
             num_agents = int(data.get('num_agents', 9))
             days = int(data.get('days', 1))
-            initial_money = int(data.get('initial_money', 100))
-            initial_inv = int(data.get('initial_inv', 10))
+            initial_money = int(data.get('initial_money', INITIAL_MONEY))
+            initial_inv = int(data.get('initial_inv', INITIAL_INVENTORY))
             job_counts = data.get('job_counts', {})
         else:
             num_agents = int(request.form.get('num_agents', 9))
             days = int(request.form.get('days', 1))
-            initial_money = int(request.form.get('initial_money', 100))
-            initial_inv = int(request.form.get('initial_inv', 10))
+            initial_money = int(request.form.get('initial_money', INITIAL_MONEY))
+            initial_inv = int(request.form.get('initial_inv', INITIAL_INVENTORY))
             job_counts = {}
             for key, val in request.form.items():
                 if key.startswith('job_'):
@@ -161,7 +163,9 @@ def reset():
         num_agents = int(request.form.get('num_agents', 9))
     global _history, _persistent_market
     _history.reset()
-    _persistent_market = Market(num_agents=num_agents, history=_history)
+    _persistent_market = Market(num_agents=num_agents, history=_history,
+                                initial_inv=INITIAL_INVENTORY,
+                                initial_money=INITIAL_MONEY)
     data = _compile_results(_persistent_market)
     if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
         return jsonify(data)
@@ -176,7 +180,9 @@ def load():
     num_agents = int(request.args.get('num_agents', 9))
     DB_PATH = db
     _history = SQLiteHistory(DB_PATH)
-    _persistent_market = Market(num_agents=num_agents, history=_history)
+    _persistent_market = Market(num_agents=num_agents, history=_history,
+                                initial_inv=INITIAL_INVENTORY,
+                                initial_money=INITIAL_MONEY)
     data = _compile_results(_persistent_market)
     if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
         return jsonify(data)
@@ -194,7 +200,9 @@ def rebuild():
     rebuild_database()
     global _history, _persistent_market
     _history.reset()
-    _persistent_market = Market(num_agents=num_agents, history=_history)
+    _persistent_market = Market(num_agents=num_agents, history=_history,
+                                initial_inv=INITIAL_INVENTORY,
+                                initial_money=INITIAL_MONEY)
     data = _compile_results(_persistent_market)
     if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
         return jsonify(data)
