@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, Blueprint, render_template, request, jsonify
 
 from config import DB_PATH, INITIAL_MONEY, INITIAL_INVENTORY
 
@@ -16,6 +16,9 @@ if __package__ is None:  # pragma: no cover - executed only when run directly
 
 from economy import Market, SQLiteHistory, jobs, rebuild_database
 
+# Blueprint for all routes
+bp = Blueprint("market", __name__)
+
 # Persistent simulation support
 _history = SQLiteHistory(DB_PATH)
 _persistent_market = Market(
@@ -26,10 +29,7 @@ _persistent_market = Market(
 )
 
 
-app = Flask(__name__)
-
-
-@app.route("/", methods=["GET", "POST"])
+@bp.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         if request.is_json:
@@ -121,7 +121,7 @@ def _compile_results(market):
     return {"days": days, "results": results, "agents": agent_stats}
 
 
-@app.route("/overview", methods=["GET"])
+@bp.route("/overview", methods=["GET"])
 def overview():
     """Return high level market overview for the persistent market."""
     data = _persistent_market.overview_stats()
@@ -133,7 +133,7 @@ def overview():
     return render_template("overview.html", **data)
 
 
-@app.route("/agent/<path:name>", methods=["GET"])
+@bp.route("/agent/<path:name>", methods=["GET"])
 def agent_detail(name):
     """Show detailed statistics for a single agent."""
     agent = next((a for a in _persistent_market._agents if a.name == name), None)
@@ -157,7 +157,7 @@ def agent_detail(name):
     return render_template("agent.html", **data)
 
 
-@app.route("/step", methods=["POST"])
+@bp.route("/step", methods=["POST"])
 def step():
     """Advance the persistent simulation by N days."""
     if request.is_json:
@@ -177,7 +177,7 @@ def step():
     return render_template("results.html", **data)
 
 
-@app.route("/reset", methods=["POST"])
+@bp.route("/reset", methods=["POST"])
 def reset():
     """Reset the persistent simulation state."""
     if request.is_json:
@@ -203,7 +203,7 @@ def reset():
     return render_template("results.html", **data)
 
 
-@app.route("/load", methods=["GET"])
+@bp.route("/load", methods=["GET"])
 def load():
     """Load an existing simulation database."""
     global _history, _persistent_market, DB_PATH
@@ -226,7 +226,7 @@ def load():
     return render_template("results.html", **data)
 
 
-@app.route("/rebuild", methods=["POST"])
+@bp.route("/rebuild", methods=["POST"])
 def rebuild():
     """Rebuild goods and jobs tables and reset the persistent market."""
     if request.is_json:
@@ -252,6 +252,9 @@ def rebuild():
         return jsonify(data)
     return render_template("results.html", **data)
 
+
+app = Flask(__name__)
+app.register_blueprint(bp)
 
 if __name__ == "__main__":
     app.run(debug=True)
