@@ -77,4 +77,3 @@ def rebuild_database():
 
     goods_mod._load_goods()
     jobs_mod._load_jobs()
-

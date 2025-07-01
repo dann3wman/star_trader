@@ -32,7 +32,7 @@ class Beliefs(object):
             confidence *= 0.9
         else:
             # Our price wasn't good enough; shift our belief
-            belief = (belief + clearing_price)/2
+            belief = (belief + clearing_price) / 2
             # Also, our confidence is shaken by our failure
             confidence /= 0.9
 
@@ -41,7 +41,7 @@ class Beliefs(object):
             # First find the top end of our range
             top = belief + confidence
             # Now move our belief to the middle of the range [MIN_PRICE,top]
-            belief = (top + MIN_PRICE)/2
+            belief = (top + MIN_PRICE) / 2
             # And now fix our confidence so the top of our range doesn't move
             confidence = top - belief
 

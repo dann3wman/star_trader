@@ -3,7 +3,7 @@ import logging
 
 
 from economy.market.history import Trades
-from economy.offer import Ask,Bid
+from economy.offer import Ask, Bid
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class OrderBook(object):
             bid = bids.pop()
 
             qty = min(ask.units, bid.units)
-            price = round((ask.unit_price + bid.unit_price)/2)
+            price = round((ask.unit_price + bid.unit_price) / 2)
 
             try:
                 low = min(low, price)
@@ -71,7 +71,7 @@ class OrderBook(object):
                 high = price
 
             units_sold += qty
-            total_value += qty*price
+            total_value += qty * price
 
             bid.agent.give_money(qty * price, ask.agent)
             ask.agent.give_items(good, qty, bid.agent)
@@ -83,9 +83,14 @@ class OrderBook(object):
 
             logger.debug(
                 "Bid: %s units of %s for %s; Ask: %s units of %s for %s; Cleared %s units for %s",
-                bid.units, bid.good, bid.unit_price,
-                ask.units, ask.good, ask.unit_price,
-                qty, price,
+                bid.units,
+                bid.good,
+                bid.unit_price,
+                ask.units,
+                ask.good,
+                ask.unit_price,
+                qty,
+                price,
             )
 
             ask.units -= qty
@@ -98,7 +103,7 @@ class OrderBook(object):
                 bids.append(bid)
 
         if units_sold > 0:
-            unit_price = round(total_value/units_sold)
+            unit_price = round(total_value / units_sold)
 
             while asks:
                 # Unsuccessful Asks
@@ -120,5 +125,11 @@ class OrderBook(object):
             unit_price = None
             logger.info("0 units of %s were traded today", good)
 
-        return Trades(low=low, high=high, volume=units_sold, mean=unit_price, supply=supply, demand=demand)
-
+        return Trades(
+            low=low,
+            high=high,
+            volume=units_sold,
+            mean=unit_price,
+            supply=supply,
+            demand=demand,
+        )

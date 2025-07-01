@@ -15,15 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 def dump_agent(agent):
-    inv = ''
+    inv = ""
     for item in agent._inventory._items:
-        inv += ',{item},{qty}'.format(
-                item = item,
-                qty = agent._inventory.query_inventory(item),
-                )
+        inv += ",{item},{qty}".format(
+            item=item,
+            qty=agent._inventory.query_inventory(item),
+        )
 
     logger.debug(
-        '{agent},{job}{inv},{money}¤'.format(
+        "{agent},{job}{inv},{money}¤".format(
             agent=agent._name,
             job=agent.job,
             inv=inv,
@@ -45,8 +45,9 @@ class Agent(object):
     _age = 0
     beliefs = None
 
-    def __init__(self, recipe, market, initial_inv=INITIAL_INVENTORY,
-                 initial_money=INITIAL_MONEY):
+    def __init__(
+        self, recipe, market, initial_inv=INITIAL_INVENTORY, initial_money=INITIAL_MONEY
+    ):
         self._recipe = recipe
         self._market = market
         self._money = initial_money
@@ -61,7 +62,9 @@ class Agent(object):
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
-        qty = round(initial_inv / (len(self._recipe.inputs) + len(self._recipe.outputs)))
+        qty = round(
+            initial_inv / (len(self._recipe.inputs) + len(self._recipe.outputs))
+        )
         for step in list(self._recipe.inputs) + list(self._recipe.outputs):
             self._inventory.set_qty(step.good, qty)
 
@@ -96,7 +99,7 @@ class Agent(object):
     @property
     def is_bankrupt(self):
         # TODO: TEMPORARY hack to prevent "harvesters"/"consumers" going bankrupt
-        if len(self._recipe.inputs+self._recipe.outputs) <= 1:
+        if len(self._recipe.inputs + self._recipe.outputs) <= 1:
             return False
 
         return self._money <= 0
@@ -137,7 +140,9 @@ class Agent(object):
             )
 
             if bid_qty > 0:
-                yield Bid(step.good, bid_qty, self.beliefs.choose_price(step.good), self)
+                yield Bid(
+                    step.good, bid_qty, self.beliefs.choose_price(step.good), self
+                )
 
         for step in self._recipe.outputs:
             # We produce these, sell 'em
@@ -147,13 +152,20 @@ class Agent(object):
             )
 
             if ask_qty > 0:
-                yield Ask(step.good, ask_qty, self.beliefs.choose_price(step.good), self)
+                yield Ask(
+                    step.good, ask_qty, self.beliefs.choose_price(step.good), self
+                )
 
         for tool in self._recipe.tools:
             # Check if we need to buy any tools
             have = self._inventory.query_inventory(tool.tool)
             if have < tool.qty:
-                yield Bid(tool.tool, tool.qty - have, self.beliefs.choose_price(tool.tool), self)
+                yield Bid(
+                    tool.tool,
+                    tool.qty - have,
+                    self.beliefs.choose_price(tool.tool),
+                    self,
+                )
 
     def give_money(self, amt, other):
         self._money -= amt
@@ -168,12 +180,12 @@ class Agent(object):
         other._inventory.add_item(item, amt)
 
     def record_purchase(self, good, qty):
-        stats = self._trade_stats.setdefault(good, {'bought': 0, 'sold': 0})
-        stats['bought'] += qty
+        stats = self._trade_stats.setdefault(good, {"bought": 0, "sold": 0})
+        stats["bought"] += qty
 
     def record_sale(self, good, qty):
-        stats = self._trade_stats.setdefault(good, {'bought': 0, 'sold': 0})
-        stats['sold'] += qty
+        stats = self._trade_stats.setdefault(good, {"bought": 0, "sold": 0})
+        stats["sold"] += qty
 
     @property
     def trade_stats(self):
@@ -182,9 +194,9 @@ class Agent(object):
     @property
     def trade_totals(self):
         """Return total units bought and sold across all goods."""
-        bought = sum(v['bought'] for v in self._trade_stats.values())
-        sold = sum(v['sold'] for v in self._trade_stats.values())
-        return {'bought': bought, 'sold': sold}
+        bought = sum(v["bought"] for v in self._trade_stats.values())
+        sold = sum(v["sold"] for v in self._trade_stats.values())
+        return {"bought": bought, "sold": sold}
 
     def advance_day(self):
         """Increment the agent's age by one day."""
@@ -241,5 +253,4 @@ class Agent(object):
         for step in self._recipe.inputs:
             cost += step.qty * self.beliefs.get_belief(step.good)[0]
 
-        return round(cost/max(1,outputs))
-
+        return round(cost / max(1, outputs))

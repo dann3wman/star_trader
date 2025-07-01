@@ -18,32 +18,36 @@ from economy import Market, SQLiteHistory, jobs, rebuild_database
 
 # Persistent simulation support
 _history = SQLiteHistory(DB_PATH)
-_persistent_market = Market(num_agents=9, history=_history,
-                           initial_inv=INITIAL_INVENTORY,
-                           initial_money=INITIAL_MONEY)
+_persistent_market = Market(
+    num_agents=9,
+    history=_history,
+    initial_inv=INITIAL_INVENTORY,
+    initial_money=INITIAL_MONEY,
+)
 
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == 'POST':
+    if request.method == "POST":
         if request.is_json:
             data = request.get_json()
-            num_agents = int(data.get('num_agents', 9))
-            days = int(data.get('days', 1))
-            initial_money = int(data.get('initial_money', INITIAL_MONEY))
-            initial_inv = int(data.get('initial_inv', INITIAL_INVENTORY))
-            job_counts = data.get('job_counts', {})
+            num_agents = int(data.get("num_agents", 9))
+            days = int(data.get("days", 1))
+            initial_money = int(data.get("initial_money", INITIAL_MONEY))
+            initial_inv = int(data.get("initial_inv", INITIAL_INVENTORY))
+            job_counts = data.get("job_counts", {})
         else:
-            num_agents = int(request.form.get('num_agents', 9))
-            days = int(request.form.get('days', 1))
-            initial_money = int(request.form.get('initial_money', INITIAL_MONEY))
-            initial_inv = int(request.form.get('initial_inv', INITIAL_INVENTORY))
+            num_agents = int(request.form.get("num_agents", 9))
+            days = int(request.form.get("days", 1))
+            initial_money = int(request.form.get("initial_money", INITIAL_MONEY))
+            initial_inv = int(request.form.get("initial_inv", INITIAL_INVENTORY))
             job_counts = {}
             for key, val in request.form.items():
-                if key.startswith('job_'):
-                    job_name = key[4:].replace('_', ' ')
+                if key.startswith("job_"):
+                    job_name = key[4:].replace("_", " ")
                     try:
                         count = int(val)
                     except ValueError:
@@ -51,8 +55,12 @@ def index():
                     if count > 0:
                         job_counts[job_name] = count
 
-        market = Market(num_agents=num_agents, job_counts=job_counts,
-                        initial_inv=initial_inv, initial_money=initial_money)
+        market = Market(
+            num_agents=num_agents,
+            job_counts=job_counts,
+            initial_inv=initial_inv,
+            initial_money=initial_money,
+        )
         market.simulate(days)
 
         # Collect aggregated statistics and daily price history
@@ -64,23 +72,29 @@ def index():
             prices = [trade.mean for trade in hist[good]]
             volumes = [trade.volume for trade in hist[good]]
             results[str(good)] = {
-                'low': low,
-                'high': high,
-                'current': current,
-                'ratio': ratio,
-                'prices': prices,
-                'volumes': volumes,
+                "low": low,
+                "high": high,
+                "current": current,
+                "ratio": ratio,
+                "prices": prices,
+                "volumes": volumes,
             }
 
         agent_stats = market.agent_stats()
         for agent in agent_stats:
-            agent['trades'] = {str(k): v for k, v in agent['trades'].items()}
-        if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
-            return jsonify({'days': days, 'results': results, 'agents': agent_stats})
-        return render_template('results.html', results=results, days=days, agents=agent_stats)
+            agent["trades"] = {str(k): v for k, v in agent["trades"].items()}
+        if (
+            request.is_json
+            or request.accept_mimetypes["application/json"]
+            >= request.accept_mimetypes["text/html"]
+        ):
+            return jsonify({"days": days, "results": results, "agents": agent_stats})
+        return render_template(
+            "results.html", results=results, days=days, agents=agent_stats
+        )
 
     job_list = [str(j) for j in jobs.all()]
-    return render_template('index.html', jobs=job_list)
+    return render_template("index.html", jobs=job_list)
 
 
 def _compile_results(market):
@@ -93,30 +107,33 @@ def _compile_results(market):
         prices = [trade.mean for trade in hist[good]]
         volumes = [trade.volume for trade in hist[good]]
         results[str(good)] = {
-            'low': low,
-            'high': high,
-            'current': current,
-            'ratio': ratio,
-            'prices': prices,
-            'volumes': volumes,
+            "low": low,
+            "high": high,
+            "current": current,
+            "ratio": ratio,
+            "prices": prices,
+            "volumes": volumes,
         }
 
     agent_stats = market.agent_stats()
     for agent in agent_stats:
-        agent['trades'] = {str(k): v for k, v in agent['trades'].items()}
-    return {'days': days, 'results': results, 'agents': agent_stats}
+        agent["trades"] = {str(k): v for k, v in agent["trades"].items()}
+    return {"days": days, "results": results, "agents": agent_stats}
 
 
-@app.route('/overview', methods=['GET'])
+@app.route("/overview", methods=["GET"])
 def overview():
     """Return high level market overview for the persistent market."""
     data = _persistent_market.overview_stats()
-    if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+    if (
+        request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    ):
         return jsonify(data)
-    return render_template('overview.html', **data)
+    return render_template("overview.html", **data)
 
 
-@app.route('/agent/<path:name>', methods=['GET'])
+@app.route("/agent/<path:name>", methods=["GET"])
 def agent_detail(name):
     """Show detailed statistics for a single agent."""
     agent = next((a for a in _persistent_market._agents if a.name == name), None)
@@ -124,89 +141,117 @@ def agent_detail(name):
         return ("Agent not found", 404)
     inventory = {str(g): qty for g, qty in agent._inventory._items.items()}
     data = {
-        'name': agent.name,
-        'job': agent.job,
-        'money': agent.money,
-        'total_profit': agent.total_profit,
-        'age': agent.age,
-        'inventory': inventory,
-        'trades': {str(k): v for k, v in agent.trade_stats.items()},
+        "name": agent.name,
+        "job": agent.job,
+        "money": agent.money,
+        "total_profit": agent.total_profit,
+        "age": agent.age,
+        "inventory": inventory,
+        "trades": {str(k): v for k, v in agent.trade_stats.items()},
     }
-    if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+    if (
+        request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    ):
         return jsonify(data)
-    return render_template('agent.html', **data)
+    return render_template("agent.html", **data)
 
 
-@app.route('/step', methods=['POST'])
+@app.route("/step", methods=["POST"])
 def step():
     """Advance the persistent simulation by N days."""
     if request.is_json:
         data = request.get_json()
-        days = int(data.get('days', 1))
+        days = int(data.get("days", 1))
     else:
-        days = int(request.form.get('days', 1))
+        days = int(request.form.get("days", 1))
     global _persistent_market
     _persistent_market.simulate(days)
     data = _compile_results(_persistent_market)
-    if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+    if (
+        request.is_json
+        or request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    ):
         return jsonify(data)
-    return render_template('results.html', **data)
+    return render_template("results.html", **data)
 
 
-@app.route('/reset', methods=['POST'])
+@app.route("/reset", methods=["POST"])
 def reset():
     """Reset the persistent simulation state."""
     if request.is_json:
         data = request.get_json()
-        num_agents = int(data.get('num_agents', 9))
+        num_agents = int(data.get("num_agents", 9))
     else:
-        num_agents = int(request.form.get('num_agents', 9))
+        num_agents = int(request.form.get("num_agents", 9))
     global _history, _persistent_market
     _history.reset()
-    _persistent_market = Market(num_agents=num_agents, history=_history,
-                                initial_inv=INITIAL_INVENTORY,
-                                initial_money=INITIAL_MONEY)
+    _persistent_market = Market(
+        num_agents=num_agents,
+        history=_history,
+        initial_inv=INITIAL_INVENTORY,
+        initial_money=INITIAL_MONEY,
+    )
     data = _compile_results(_persistent_market)
-    if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+    if (
+        request.is_json
+        or request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    ):
         return jsonify(data)
-    return render_template('results.html', **data)
+    return render_template("results.html", **data)
 
 
-@app.route('/load', methods=['GET'])
+@app.route("/load", methods=["GET"])
 def load():
     """Load an existing simulation database."""
     global _history, _persistent_market, DB_PATH
-    db = request.args.get('db', DB_PATH)
-    num_agents = int(request.args.get('num_agents', 9))
+    db = request.args.get("db", DB_PATH)
+    num_agents = int(request.args.get("num_agents", 9))
     DB_PATH = db
     _history = SQLiteHistory(DB_PATH)
-    _persistent_market = Market(num_agents=num_agents, history=_history,
-                                initial_inv=INITIAL_INVENTORY,
-                                initial_money=INITIAL_MONEY)
+    _persistent_market = Market(
+        num_agents=num_agents,
+        history=_history,
+        initial_inv=INITIAL_INVENTORY,
+        initial_money=INITIAL_MONEY,
+    )
     data = _compile_results(_persistent_market)
-    if request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+    if (
+        request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    ):
         return jsonify(data)
-    return render_template('results.html', **data)
+    return render_template("results.html", **data)
 
 
-@app.route('/rebuild', methods=['POST'])
+@app.route("/rebuild", methods=["POST"])
 def rebuild():
     """Rebuild goods and jobs tables and reset the persistent market."""
     if request.is_json:
         data = request.get_json()
-        num_agents = int(data.get('num_agents', 9))
+        num_agents = int(data.get("num_agents", 9))
     else:
-        num_agents = int(request.form.get('num_agents', 9))
+        num_agents = int(request.form.get("num_agents", 9))
     rebuild_database()
     global _history, _persistent_market
     _history.reset()
-    _persistent_market = Market(num_agents=num_agents, history=_history,
-                                initial_inv=INITIAL_INVENTORY,
-                                initial_money=INITIAL_MONEY)
+    _persistent_market = Market(
+        num_agents=num_agents,
+        history=_history,
+        initial_inv=INITIAL_INVENTORY,
+        initial_money=INITIAL_MONEY,
+    )
     data = _compile_results(_persistent_market)
-    if request.is_json or request.accept_mimetypes['application/json'] >= request.accept_mimetypes['text/html']:
+    if (
+        request.is_json
+        or request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    ):
         return jsonify(data)
-    return render_template('results.html', **data)
+    return render_template("results.html", **data)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)

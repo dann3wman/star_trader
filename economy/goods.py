@@ -8,13 +8,15 @@ from sqlalchemy import select
 from . import db
 
 
-
 _by_name: Dict[str, "Good"] = {}
+
 
 def by_name(name: str) -> "Good":
     return _by_name[name.lower()]
 
+
 _goods: List["Good"] = []
+
 
 def all() -> Iterator["Good"]:
     for good in _goods:
@@ -32,7 +34,6 @@ class Good:
 
     def __str__(self):
         return self.name
-
 
 
 def _load_goods():
@@ -53,4 +54,3 @@ def _load_goods():
 
 
 _load_goods()
-

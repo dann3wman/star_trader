@@ -1,5 +1,3 @@
-
-
 MIN_PRICE = 1
 
 
@@ -36,12 +34,12 @@ class OrderBase(object):
         return self._agent
 
     def __str__(self):
-        return '{order}({good},{units},{unit_price})'.format(
-                order = self.__class__.__name__,
-                good = self.good,
-                units = self.units,
-                unit_price = self.unit_price,
-                )
+        return "{order}({good},{units},{unit_price})".format(
+            order=self.__class__.__name__,
+            good=self.good,
+            units=self.units,
+            unit_price=self.unit_price,
+        )
 
 
 class Bid(OrderBase):
@@ -50,4 +48,3 @@ class Bid(OrderBase):
 
 class Ask(OrderBase):
     pass
-
