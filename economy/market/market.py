@@ -83,66 +83,85 @@ class Market(object):
                 )
 
     def simulate(self, steps=1):
-        # DEBUG
+        """Run the market simulation for ``steps`` days."""
+        self._debug_agents()
+
+        for _ in range(steps):
+            self._run_day()
+
+        self._debug_agents()
+
+    def _debug_agents(self) -> None:
+        """Output debug information for all agents."""
         for agent in self._agents:
             dump_agent(agent)
 
-        for day in range(steps):
-            self._history.open_day()
-            self._book.clear_books()
+    # -- Simulation helpers -------------------------------------------------
 
-            for agent in self._agents:
-                self._book.add_orders(agent.make_offers())
-                agent.do_production()
+    def _run_day(self) -> None:
+        self._open_day()
+        self._collect_orders()
+        daily_sd = self._resolve_all_orders()
+        self._history.close_day()
+        self._process_end_of_day(daily_sd)
 
-            daily_sd = {}
-            for good in goods.all():
-                trades = self._book.resolve_orders(good)
-                self._history.add_trades(good, trades)
-                daily_sd[good] = trades
+    def _open_day(self) -> None:
+        self._history.open_day()
+        self._book.clear_books()
 
-            self._history.close_day()
-
-            for agent in self._agents:
-                agent.pay_tax(self._daily_tax)
-                agent.advance_day()
-
-            dead_agents = [agent for agent in self._agents if agent.is_bankrupt]
-            for agent in dead_agents:
-                self._lifespans.append(agent.age)
-
-            agents = [agent for agent in self._agents if not agent.is_bankrupt]
-
-            while len(agents) < len(self._agents):
-                job_weights = {}
-
-                for good, trade in daily_sd.items():
-                    delta = trade.supply - trade.demand
-                    if delta > 0:
-                        # Oversupply: favour consumers of this good
-                        for job in jobs.all():
-                            if any(step.good == good for step in job.inputs):
-                                job_weights[job] = job_weights.get(job, 0) + delta
-                    elif delta < 0:
-                        # Excess demand: favour producers
-                        for job in jobs.all():
-                            if any(step.good == good for step in job.outputs):
-                                job_weights[job] = job_weights.get(job, 0) + (-delta)
-
-                if job_weights:
-                    choices = list(job_weights.keys())
-                    weights = list(job_weights.values())
-                    recipe = random.choices(choices, weights=weights, k=1)[0]
-                else:
-                    recipe = random.choice(list(jobs.all()))
-
-                agents.append(Agent(recipe, self))
-
-            self._agents = agents
-
-        # DEBUG
+    def _collect_orders(self) -> None:
         for agent in self._agents:
-            dump_agent(agent)
+            self._book.add_orders(agent.make_offers())
+            agent.do_production()
+
+    def _resolve_all_orders(self):
+        daily_sd = {}
+        for good in goods.all():
+            trades = self._book.resolve_orders(good)
+            self._history.add_trades(good, trades)
+            daily_sd[good] = trades
+        return daily_sd
+
+    def _process_end_of_day(self, daily_sd) -> None:
+        for agent in self._agents:
+            agent.pay_tax(self._daily_tax)
+            agent.advance_day()
+
+        dead_agents = [agent for agent in self._agents if agent.is_bankrupt]
+        for agent in dead_agents:
+            self._lifespans.append(agent.age)
+
+        agents = [agent for agent in self._agents if not agent.is_bankrupt]
+
+        while len(agents) < len(self._agents):
+            agents.append(self._spawn_agent(daily_sd))
+
+        self._agents = agents
+
+    def _spawn_agent(self, daily_sd):
+        job_weights = {}
+
+        for good, trade in daily_sd.items():
+            delta = trade.supply - trade.demand
+            if delta > 0:
+                # Oversupply: favour consumers of this good
+                for job in jobs.all():
+                    if any(step.good == good for step in job.inputs):
+                        job_weights[job] = job_weights.get(job, 0) + delta
+            elif delta < 0:
+                # Excess demand: favour producers
+                for job in jobs.all():
+                    if any(step.good == good for step in job.outputs):
+                        job_weights[job] = job_weights.get(job, 0) + (-delta)
+
+        if job_weights:
+            choices = list(job_weights.keys())
+            weights = list(job_weights.values())
+            recipe = random.choices(choices, weights=weights, k=1)[0]
+        else:
+            recipe = random.choice(list(jobs.all()))
+
+        return Agent(recipe, self)
 
     def make_charts(self):
         """Generate interactive charts for price and volume using Plotly."""
