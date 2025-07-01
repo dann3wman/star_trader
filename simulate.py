@@ -1,7 +1,10 @@
 import argparse
+import logging
 
 from economy.market.market import Market
 from economy.market.history import SQLiteHistory
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -12,16 +15,18 @@ def main():
     parser.add_argument("--db", default="sim.db", help="SQLite database file")
     args = parser.parse_args()
 
+    logging.basicConfig(level=logging.INFO)
+
     history = SQLiteHistory(db_path=args.db)
 
     if args.reset:
         history.reset()
-        print("Simulation reset.")
+        logger.info("Simulation reset.")
         return
 
     market = Market(num_agents=args.num_agents, history=history)
     market.simulate(args.step)
-    print(f"Simulated up to day {history.day_number}.")
+    logger.info("Simulated up to day %s.", history.day_number)
 
 
 if __name__ == "__main__":
