@@ -7,3 +7,5 @@ flask-wtf
 sqlalchemy
 flask_sqlalchemy
 plotly
+flask-marshmallow
+marshmallow-sqlalchemy

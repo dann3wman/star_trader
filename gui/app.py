@@ -1,5 +1,7 @@
 from flask import Flask, Blueprint, render_template, request, jsonify
 
+from .schemas import ma, SimulationResultSchema, OverviewSchema, AgentDetailSchema
+
 from .forms import SimulationForm
 
 from economy.db import init_app as init_db
@@ -72,32 +74,17 @@ def index():
         )
         market.simulate(days)
 
-        hist = market.history(days)
-        results = {}
-        for good in hist:
-            low, high, current, ratio = market.aggregate(good, days)
-            prices = [trade.mean for trade in hist[good]]
-            volumes = [trade.volume for trade in hist[good]]
-            results[str(good)] = {
-                "low": low,
-                "high": high,
-                "current": current,
-                "ratio": ratio,
-                "prices": prices,
-                "volumes": volumes,
-            }
-
-        agent_stats = market.agent_stats()
-        for agent in agent_stats:
-            agent["trades"] = {str(k): v for k, v in agent["trades"].items()}
+        data = _compile_results(market)
+        schema = SimulationResultSchema()
         if (
             request.is_json
             or request.accept_mimetypes["application/json"]
             >= request.accept_mimetypes["text/html"]
         ):
-            return jsonify({"days": days, "results": results, "agents": agent_stats})
+            return schema.jsonify(data)
+        data = schema.dump(data)
         return render_template(
-            "results.html", results=results, days=days, agents=agent_stats
+            "results.html", results=data["results"], days=data["days"], agents=data["agents"]
         )
 
     return render_template("index.html", form=form, job_fields=job_fields)
@@ -131,12 +118,13 @@ def _compile_results(market):
 def overview():
     """Return high level market overview for the persistent market."""
     data = _persistent_market.overview_stats()
+    schema = OverviewSchema()
     if (
         request.accept_mimetypes["application/json"]
         >= request.accept_mimetypes["text/html"]
     ):
-        return jsonify(data)
-    return render_template("overview.html", **data)
+        return schema.jsonify(data)
+    return render_template("overview.html", **schema.dump(data))
 
 
 @bp.route("/agent/<path:name>", methods=["GET"])
@@ -155,12 +143,13 @@ def agent_detail(name):
         "inventory": inventory,
         "trades": {str(k): v for k, v in agent.trade_stats.items()},
     }
+    schema = AgentDetailSchema()
     if (
         request.accept_mimetypes["application/json"]
         >= request.accept_mimetypes["text/html"]
     ):
-        return jsonify(data)
-    return render_template("agent.html", **data)
+        return schema.jsonify(data)
+    return render_template("agent.html", **schema.dump(data))
 
 
 @bp.route("/step", methods=["POST"])
@@ -174,13 +163,14 @@ def step():
     global _persistent_market
     _persistent_market.simulate(days)
     data = _compile_results(_persistent_market)
+    schema = SimulationResultSchema()
     if (
         request.is_json
         or request.accept_mimetypes["application/json"]
         >= request.accept_mimetypes["text/html"]
     ):
-        return jsonify(data)
-    return render_template("results.html", **data)
+        return schema.jsonify(data)
+    return render_template("results.html", **schema.dump(data))
 
 
 @bp.route("/reset", methods=["POST"])
@@ -200,13 +190,14 @@ def reset():
         initial_money=INITIAL_MONEY,
     )
     data = _compile_results(_persistent_market)
+    schema = SimulationResultSchema()
     if (
         request.is_json
         or request.accept_mimetypes["application/json"]
         >= request.accept_mimetypes["text/html"]
     ):
-        return jsonify(data)
-    return render_template("results.html", **data)
+        return schema.jsonify(data)
+    return render_template("results.html", **schema.dump(data))
 
 
 @bp.route("/load", methods=["GET"])
@@ -224,12 +215,13 @@ def load():
         initial_money=INITIAL_MONEY,
     )
     data = _compile_results(_persistent_market)
+    schema = SimulationResultSchema()
     if (
         request.accept_mimetypes["application/json"]
         >= request.accept_mimetypes["text/html"]
     ):
-        return jsonify(data)
-    return render_template("results.html", **data)
+        return schema.jsonify(data)
+    return render_template("results.html", **schema.dump(data))
 
 
 @bp.route("/rebuild", methods=["POST"])
@@ -250,18 +242,20 @@ def rebuild():
         initial_money=INITIAL_MONEY,
     )
     data = _compile_results(_persistent_market)
+    schema = SimulationResultSchema()
     if (
         request.is_json
         or request.accept_mimetypes["application/json"]
         >= request.accept_mimetypes["text/html"]
     ):
-        return jsonify(data)
-    return render_template("results.html", **data)
+        return schema.jsonify(data)
+    return render_template("results.html", **schema.dump(data))
 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev"
 init_db(app)
+ma.init_app(app)
 app.register_blueprint(bp)
 
 if __name__ == "__main__":
