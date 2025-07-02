@@ -1,5 +1,7 @@
 from flask import Flask, Blueprint, render_template, request, jsonify
 
+from .forms import SimulationForm
+
 from economy.db import init_app as init_db
 
 from config import DB_PATH, INITIAL_MONEY, INITIAL_INVENTORY
@@ -33,6 +35,11 @@ _persistent_market = Market(
 
 @bp.route("/", methods=["GET", "POST"])
 def index():
+    job_list = [str(j) for j in jobs.all()]
+    Form = SimulationForm(job_list)
+    form = Form()
+    job_fields = [getattr(form, f"job_{j.replace(' ', '_')}") for j in job_list]
+
     if request.method == "POST":
         if request.is_json:
             data = request.get_json()
@@ -42,20 +49,20 @@ def index():
             initial_inv = int(data.get("initial_inv", INITIAL_INVENTORY))
             job_counts = data.get("job_counts", {})
         else:
-            num_agents = int(request.form.get("num_agents", 9))
-            days = int(request.form.get("days", 1))
-            initial_money = int(request.form.get("initial_money", INITIAL_MONEY))
-            initial_inv = int(request.form.get("initial_inv", INITIAL_INVENTORY))
-            job_counts = {}
-            for key, val in request.form.items():
-                if key.startswith("job_"):
-                    job_name = key[4:].replace("_", " ")
-                    try:
-                        count = int(val)
-                    except ValueError:
-                        continue
-                    if count > 0:
-                        job_counts[job_name] = count
+            form.process(request.form)
+            if form.validate():
+                num_agents = form.num_agents.data
+                days = form.days.data
+                initial_money = form.initial_money.data
+                initial_inv = form.initial_inv.data
+                job_counts = {}
+                for j in job_list:
+                    slug = j.replace(" ", "_")
+                    count = getattr(form, f"job_{slug}").data
+                    if count and count > 0:
+                        job_counts[j] = count
+            else:
+                return render_template("index.html", form=form, job_fields=job_fields)
 
         market = Market(
             num_agents=num_agents,
@@ -65,12 +72,10 @@ def index():
         )
         market.simulate(days)
 
-        # Collect aggregated statistics and daily price history
         hist = market.history(days)
         results = {}
         for good in hist:
             low, high, current, ratio = market.aggregate(good, days)
-            # Extract mean price for each day (may be None if no trades)
             prices = [trade.mean for trade in hist[good]]
             volumes = [trade.volume for trade in hist[good]]
             results[str(good)] = {
@@ -95,8 +100,7 @@ def index():
             "results.html", results=results, days=days, agents=agent_stats
         )
 
-    job_list = [str(j) for j in jobs.all()]
-    return render_template("index.html", jobs=job_list)
+    return render_template("index.html", form=form, job_fields=job_fields)
 
 
 def _compile_results(market):
@@ -256,6 +260,7 @@ def rebuild():
 
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "dev"
 init_db(app)
 app.register_blueprint(bp)
 

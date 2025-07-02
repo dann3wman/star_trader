@@ -3,6 +3,7 @@ numpy
 matplotlib
 pytest
 flask
+flask-wtf
 sqlalchemy
 flask_sqlalchemy
 plotly
