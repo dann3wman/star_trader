@@ -34,8 +34,6 @@ The following areas could benefit from a refactor to improve maintainability and
 ## 10. Lazy load name lists
 - `economy/names.py` reads `names.yml` at import time. Loading this data only when names are requested would speed up startup and make it easier to supply alternative name lists.
 
-## 11. Introduce custom exceptions
-- Many error cases raise generic exceptions. Defining domain-specific exception classes would clarify intent and allow callers to handle failures more precisely.
 
 ## ~~12. Consolidate database schema~~
 - ~~Table definitions in `economy/db.py` sit alongside session helpers. Moving the schema into a dedicated module would separate concerns and simplify future migrations.~~
@@ -65,3 +63,9 @@ These changes are not required for functionality, but they would make the projec
 
 ## 20. Cache database lookups
 - Reusing loaded data could reduce overhead when accessing frequently used tables.
+
+## ~~11. Introduce custom exceptions~~
+- ~~Many error cases raise generic exceptions. Defining domain-specific exception classes would clarify intent and allow callers to handle failures more precisely.~~
+
+## 21. Add unit tests for GUI routes
+- The Flask app lacks coverage for error conditions like invalid form input. Additional tests would help prevent regressions.

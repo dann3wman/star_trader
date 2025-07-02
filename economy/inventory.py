@@ -1,3 +1,10 @@
+from .exceptions import (
+    InsufficientItemsError,
+    InsufficientSpaceError,
+    InventoryError,
+)
+
+
 class Inventory(object):
     """Simple fixed-capacity inventory for agents."""
 
@@ -16,14 +23,14 @@ class Inventory(object):
 
     def add_item(self, item, qty=1):
         if self.query_inventory() + qty > self._capacity:
-            raise ValueError(
+            raise InsufficientSpaceError(
                 "Not enough room in inventory; have {inv_qty}, tried to add {qty}".format(
                     inv_qty=self.query_inventory(),
                     qty=qty,
                 )
             )
         if self.query_inventory(item) + qty < 0:
-            raise ValueError("Not enough items in inventory")
+            raise InsufficientItemsError("Not enough items in inventory")
 
         self._items[item] = self.query_inventory(item) + qty
 
@@ -36,6 +43,6 @@ class Inventory(object):
         try:
             self._items[item] = 0
             self.add_item(item, qty)
-        except Exception:
+        except InventoryError:
             self._items[item] = old_qty
             raise

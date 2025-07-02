@@ -6,6 +6,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from economy.market.market import Market
 from economy.market.history import SQLiteHistory
+from economy.market.book import OrderBook
+from economy.offer import Ask
+from economy.exceptions import InvalidOrderTypeError
 
 
 class TestMarketSimulation(unittest.TestCase):
@@ -37,6 +40,15 @@ class TestMarketSimulation(unittest.TestCase):
             count = cur.fetchone()[0]
         self.assertGreater(count, 0)
         self.assertEqual(first_day, 1)
+
+    def test_invalid_order_type_raises(self):
+        book = OrderBook()
+
+        class FakeOrder:
+            good = None
+
+        with self.assertRaises(InvalidOrderTypeError):
+            book.add_order(FakeOrder())
 
 
 if __name__ == "__main__":

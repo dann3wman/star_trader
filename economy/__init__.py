@@ -1,5 +1,13 @@
 from .agent import Agent
 from .inventory import Inventory
+from .exceptions import (
+    StarTraderError,
+    InventoryError,
+    InsufficientSpaceError,
+    InsufficientItemsError,
+    OrderError,
+    InvalidOrderTypeError,
+)
 
 try:
     from .market.history import SQLiteHistory
@@ -22,3 +30,11 @@ from .db import rebuild_database
 # else:
 __all__.append("Market")
 __all__.append("rebuild_database")
+__all__ += [
+    "StarTraderError",
+    "InventoryError",
+    "InsufficientSpaceError",
+    "InsufficientItemsError",
+    "OrderError",
+    "InvalidOrderTypeError",
+]
