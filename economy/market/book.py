@@ -4,6 +4,7 @@ import logging
 
 from economy.market.history import Trades
 from economy.offer import Ask, Bid
+from economy.exceptions import InvalidOrderTypeError
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class OrderBook(object):
                 self._bids[order.good] = []
             self._bids[order.good].append(order)
         else:
-            raise ValueError("Order is not an Ask or a Bid")
+            raise InvalidOrderTypeError("Order is not an Ask or a Bid")
 
     def add_orders(self, orders):
         for order in orders:

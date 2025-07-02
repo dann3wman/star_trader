@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from economy.inventory import Inventory
+from economy.exceptions import InsufficientSpaceError
 
 
 class TestInventory(unittest.TestCase):
@@ -23,7 +24,7 @@ class TestInventory(unittest.TestCase):
     def test_add_items_over_capacity_raises(self):
         inv = Inventory(capacity=2)
         inv.add_item("apple", 2)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InsufficientSpaceError):
             inv.add_item("banana", 1)
 
     def test_remove_items_updates_quantities(self):
