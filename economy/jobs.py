@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, Iterator, List, Optional, Tuple
 
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 
 from . import db
 from .utils import seed_if_empty
@@ -134,28 +135,41 @@ def _load_jobs() -> None:
                     )
                 )
 
-    with db.session_scope() as session:
-        rows = seed_if_empty(
-            session,
-            select(db.JobsTable.name, db.JobsTable.job_limit),
-            "jobs.yml",
-            seed_jobs,
-        )
+    try:
+        with db.session_scope() as session:
+            rows = seed_if_empty(
+                session,
+                select(db.JobsTable.name, db.JobsTable.job_limit),
+                "jobs.yml",
+                seed_jobs,
+            )
 
-        for name, job_limit in rows:
-            inputs = [
-                {"good": r.good, "qty": r.qty}
-                for r in session.query(db.JobInput).filter_by(job=name).all()
-            ]
-            outputs = [
-                {"good": r.good, "qty": r.qty}
-                for r in session.query(db.JobOutput).filter_by(job=name).all()
-            ]
-            tools = [
-                {"tool": r.tool, "qty": r.qty, "break_chance": r.break_chance}
-                for r in session.query(db.JobTool).filter_by(job=name).all()
-            ]
-            Job(name=name, inputs=inputs, outputs=outputs, tools=tools, limit=job_limit)
+            for name, job_limit in rows:
+                inputs = [
+                    {"good": r.good, "qty": r.qty}
+                    for r in session.query(db.JobInput).filter_by(job=name).all()
+                ]
+                outputs = [
+                    {"good": r.good, "qty": r.qty}
+                    for r in session.query(db.JobOutput).filter_by(job=name).all()
+                ]
+                tools = [
+                    {"tool": r.tool, "qty": r.qty, "break_chance": r.break_chance}
+                    for r in session.query(db.JobTool).filter_by(job=name).all()
+                ]
+                Job(
+                    name=name,
+                    inputs=inputs,
+                    outputs=outputs,
+                    tools=tools,
+                    limit=job_limit,
+                )
+    except OperationalError as exc:
+        if "no such column" in str(exc):
+            # Detected an outdated schema - rebuild the database and reload
+            db.rebuild_database()
+            return
+        raise
 
 
 _load_jobs()
