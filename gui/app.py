@@ -99,7 +99,7 @@ def index():
 
 def _compile_results(market):
     """Helper to build the results dict for templates/JSON."""
-    days = market._history.day_number
+    days = market.day_number
     hist = market.history(days)
     results = {}
     for good in hist:
@@ -136,7 +136,7 @@ def overview():
 @bp.route("/agent/<path:name>", methods=["GET"])
 def agent_detail(name):
     """Show detailed statistics for a single agent."""
-    agent = next((a for a in _persistent_market._agents if a.name == name), None)
+    agent = next((a for a in _persistent_market.agents if a.name == name), None)
     if agent is None:
         return ("Agent not found", 404)
     inventory = {str(g): qty for g, qty in agent._inventory._items.items()}
