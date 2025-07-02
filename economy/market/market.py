@@ -248,6 +248,18 @@ class Market(object):
     def aggregate(self, good, depth=None):
         return self._history.aggregate(good, depth)
 
+    # -- Read-only accessors -------------------------------------------------
+
+    @property
+    def agents(self):
+        """Return a copy of the active agents list."""
+        return list(self._agents)
+
+    @property
+    def day_number(self):
+        """Current simulation day number."""
+        return self._history.day_number
+
     def agent_stats(self):
         stats = []
         for agent in self._agents:
@@ -273,7 +285,7 @@ class Market(object):
         if self._lifespans:
             avg_life = sum(self._lifespans) / len(self._lifespans)
         return {
-            "days_elapsed": self._history.day_number,
+            "days_elapsed": self.day_number,
             "active_agents": len(self._agents),
             "average_age": avg_age,
             "average_lifespan": avg_life,
