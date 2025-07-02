@@ -37,8 +37,8 @@ The following areas could benefit from a refactor to improve maintainability and
 ## 11. Introduce custom exceptions
 - Many error cases raise generic exceptions. Defining domain-specific exception classes would clarify intent and allow callers to handle failures more precisely.
 
-## 12. Consolidate database schema
-- Table definitions in `economy/db.py` sit alongside session helpers. Moving the schema into a dedicated module would separate concerns and simplify future migrations.
+## ~~12. Consolidate database schema~~
+- ~~Table definitions in `economy/db.py` sit alongside session helpers. Moving the schema into a dedicated module would separate concerns and simplify future migrations.~~
 
 ## 13. Use dataclasses for market orders
 - `Bid` and `Ask` in `offer.py` manage attributes manually. Converting them to dataclasses would reduce boilerplate and provide built-in representations.
@@ -62,3 +62,6 @@ The following areas could benefit from a refactor to improve maintainability and
 - Allow new goods, jobs, or agent behaviors to be loaded as plugins so the core engine stays minimal.
 
 These changes are not required for functionality, but they would make the project easier to maintain and extend.
+
+## 20. Cache database lookups
+- Reusing loaded data could reduce overhead when accessing frequently used tables.
