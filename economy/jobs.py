@@ -1,11 +1,10 @@
-import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, Iterator, List, Optional, Tuple
 
-import yaml
 from sqlalchemy import select
 
 from . import db
+from .utils import seed_if_empty
 
 
 from . import goods
@@ -116,36 +115,32 @@ def _load_jobs() -> None:
         ],
     )
 
+    def seed_jobs(session, data):
+        for job in data:
+            session.add(db.JobsTable(name=job["name"], job_limit=job.get("limit")))
+            for step in job.get("inputs", []):
+                session.add(db.JobInput(job=job["name"], good=step["good"], qty=step["qty"]))
+            for step in job.get("outputs", []):
+                session.add(
+                    db.JobOutput(job=job["name"], good=step["good"], qty=step["qty"])
+                )
+            for tool in job.get("tools", []):
+                session.add(
+                    db.JobTool(
+                        job=job["name"],
+                        tool=tool["tool"],
+                        qty=tool["qty"],
+                        break_chance=tool["break_chance"],
+                    )
+                )
+
     with db.session_scope() as session:
-        rows = session.execute(select(db.JobsTable.name, db.JobsTable.job_limit)).all()
-        if not rows:
-            with open(os.path.join("data", "jobs.yml")) as fh:
-                data = yaml.safe_load(fh)
-            for job in data:
-                session.add(db.JobsTable(name=job["name"], job_limit=job.get("limit")))
-                for step in job.get("inputs", []):
-                    session.add(
-                        db.JobInput(job=job["name"], good=step["good"], qty=step["qty"])
-                    )
-                for step in job.get("outputs", []):
-                    session.add(
-                        db.JobOutput(
-                            job=job["name"], good=step["good"], qty=step["qty"]
-                        )
-                    )
-                for tool in job.get("tools", []):
-                    session.add(
-                        db.JobTool(
-                            job=job["name"],
-                            tool=tool["tool"],
-                            qty=tool["qty"],
-                            break_chance=tool["break_chance"],
-                        )
-                    )
-            session.commit()
-            rows = session.execute(
-                select(db.JobsTable.name, db.JobsTable.job_limit)
-            ).all()
+        rows = seed_if_empty(
+            session,
+            select(db.JobsTable.name, db.JobsTable.job_limit),
+            "jobs.yml",
+            seed_jobs,
+        )
 
         for name, job_limit in rows:
             inputs = [
