@@ -1,60 +1,51 @@
 <!doctype html>
 <html>
   <head>
-    <title>Star Trader Simulation</title>
-    <!-- Include the Foundation CSS framework -->
+    <title>Star Trader</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
+    <style>
+      body { margin: 2rem; }
+      form label { display: block; margin-top: 0.5rem; }
+      form input[type=number] { width: 100%; max-width: 200px; }
+      hr { margin: 2rem 0; }
+    </style>
   </head>
   <body class="grid-container">
-<h1>Run Simulation</h1>
-<form method="post">
-      <label for="num_agents">Number of Agents:</label>
-      <input type="number" id="num_agents" name="num_agents" value="9" min="1" class="input-number">
-      <br/>
-      <label for="days">Days:</label>
-      <input type="number" id="days" name="days" value="5" min="1" class="input-number">
-      <br/>
-      <label for="initial_money">Initial Money:</label>
-      <input type="number" id="initial_money" name="initial_money" value="100" min="0" class="input-number">
-      <br/>
-      <label for="initial_inv">Initial Inventory:</label>
-      <input type="number" id="initial_inv" name="initial_inv" value="10" min="0" class="input-number">
-      <br/>
-      {% if jobs %}
-      <fieldset>
-        <legend>Agents Per Job</legend>
-        {% for job in jobs %}
-          {% set slug = job.replace(' ', '_') %}
-          <label for="job_{{ slug }}">{{ job }}</label>
-          <input type="number" id="job_{{ slug }}" name="job_{{ slug }}" value="0" min="0" class="input-number">
-          <br/>
-        {% endfor %}
-      </fieldset>
-      {% endif %}
-  <input type="submit" value="Run" class="button">
-</form>
+    <h1>Run Simulation</h1>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <label>{{ form.num_agents.label }} {{ form.num_agents(class="input-number") }}</label>
+      <label>{{ form.days.label }} {{ form.days(class="input-number") }}</label>
+      <label>{{ form.initial_money.label }} {{ form.initial_money(class="input-number") }}</label>
+      <label>{{ form.initial_inv.label }} {{ form.initial_inv(class="input-number") }}</label>
+      {% for field in job_fields %}
+        <label>{{ field.label }} {{ field(class="input-number") }}</label>
+      {% endfor %}
+      {{ form.submit(class="button primary") }}
+    </form>
 
-  <h2>Persistent Simulation</h2>
-  <form action="/step" method="post">
-    <label for="p_days">Days to Step:</label>
-    <input type="number" id="p_days" name="days" value="1" min="1" class="input-number">
-    <input type="submit" value="Step" class="button">
-  </form>
-  <form action="/reset" method="post">
-    <label for="p_agents">Agents:</label>
-    <input type="number" id="p_agents" name="num_agents" value="9" min="1" class="input-number">
-    <input type="submit" value="Reset" class="button alert">
-  </form>
-  <form action="/rebuild" method="post">
-    <label for="rb_agents">Agents:</label>
-    <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
-    <input type="submit" value="Rebuild DB" class="button warning">
-  </form>
-  <form action="/load" method="get">
-    <label for="db">DB File:</label>
-    <input type="text" id="db" name="db" value="sim.db">
-    <input type="submit" value="Load" class="button secondary">
-  </form>
-  <p><a href="/overview">View Market Overview</a></p>
+    <hr/>
+    <h2>Persistent Simulation</h2>
+    <form action="/step" method="post">
+      <label for="p_days">Days to Step</label>
+      <input type="number" id="p_days" name="days" value="1" min="1" class="input-number">
+      <input type="submit" value="Step" class="button">
+    </form>
+    <form action="/reset" method="post">
+      <label for="p_agents">Agents</label>
+      <input type="number" id="p_agents" name="num_agents" value="9" min="1" class="input-number">
+      <input type="submit" value="Reset" class="button alert">
+    </form>
+    <form action="/rebuild" method="post">
+      <label for="rb_agents">Agents</label>
+      <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
+      <input type="submit" value="Rebuild DB" class="button warning">
+    </form>
+    <form action="/load" method="get">
+      <label for="db">DB File</label>
+      <input type="text" id="db" name="db" value="sim.db">
+      <input type="submit" value="Load" class="button secondary">
+    </form>
+    <p><a href="/overview">View Market Overview</a></p>
   </body>
 </html>
