@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from flask_sqlalchemy import SQLAlchemy
 
 # Database path is configured via the shared config module
 from config import DB_PATH
@@ -14,8 +15,21 @@ from .schema import (
     JobTool,
 )
 
+db_ext = SQLAlchemy()
+
 engine = create_engine(f"sqlite:///{DB_PATH}")
 SessionLocal = sessionmaker(bind=engine)
+
+
+def init_app(app):
+    """Initialize Flask-SQLAlchemy with the given app."""
+    app.config.setdefault("SQLALCHEMY_DATABASE_URI", f"sqlite:///{DB_PATH}")
+    app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
+    db_ext.init_app(app)
+    global engine, SessionLocal
+    with app.app_context():
+        engine = db_ext.engine
+        SessionLocal.configure(bind=engine)
 
 
 def get_session():

@@ -4,5 +4,5 @@ matplotlib
 pytest
 flask
 sqlalchemy
+flask_sqlalchemy
 plotly
-
