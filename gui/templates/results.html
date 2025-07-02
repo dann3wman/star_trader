@@ -1,161 +1,163 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Results</title>
-    <!-- Include the Foundation CSS framework -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
-    <!-- Plotly for interactive charts -->
-    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0"></script>
-  </head>
-  <body class="grid-container">
-    <h1>Results for {{ days }} day(s)</h1>
-    <table class="hover sortable">
-      <tr>
-        <th>Good</th>
-        <th>Low</th>
-        <th>High</th>
-        <th>Current</th>
-      </tr>
-      {% for good, data in results.items() %}
-      <tr>
-        <td>{{ good }}</td>
-        <td>{{ data.low }}</td>
-        <td>{{ data.high }}</td>
-        <td>{{ data.current }}</td>
-      </tr>
-      {% endfor %}
-    </table>
+{% extends "base.html" %}
 
-    <h2>Price and Volume Charts</h2>
-    {% set idx = 1 %}
-    {% for good, data in results.items() %}
-    <h3>{{ good }}</h3>
-    <div id="priceChart-{{ idx }}" style="width:400px;height:250px;"></div>
-    <div id="volumeChart-{{ idx }}" style="width:400px;height:250px;"></div>
-    {% set idx = idx + 1 %}
+{% block title %}Results{% endblock %}
+
+{% block head %}
+<!-- Plotly for interactive charts -->
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0"></script>
+{% endblock %}
+
+{% block content %}
+<h1>Results for {{ days }} day(s)</h1>
+<table class="hover sortable">
+  <tr>
+    <th>Good</th>
+    <th>Low</th>
+    <th>High</th>
+    <th>Current</th>
+  </tr>
+  {% for good, data in results.items() %}
+  <tr>
+    <td>{{ good }}</td>
+    <td>{{ data.low }}</td>
+    <td>{{ data.high }}</td>
+    <td>{{ data.current }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Price and Volume Charts</h2>
+{% set idx = 1 %}
+{% for good, data in results.items() %}
+<h3>{{ good }}</h3>
+<div id="priceChart-{{ idx }}" style="width:400px;height:250px;"></div>
+<div id="volumeChart-{{ idx }}" style="width:400px;height:250px;"></div>
+{% set idx = idx + 1 %}
+{% endfor %}
+
+<h2>Daily Prices</h2>
+<table class="hover sortable">
+  <tr>
+    <th>Good</th>
+    {% for day in range(1, days + 1) %}
+    <th>Day {{ day }}</th>
     {% endfor %}
+  </tr>
+  {% for good, data in results.items() %}
+  <tr>
+    <td>{{ good }}</td>
+    {% for price in data.prices %}
+    <td>{% if price is none %}N/A{% else %}{{ price }}{% endif %}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
 
-    <h2>Daily Prices</h2>
-    <table class="hover sortable">
-      <tr>
-        <th>Good</th>
-        {% for day in range(1, days + 1) %}
-        <th>Day {{ day }}</th>
-        {% endfor %}
-      </tr>
-      {% for good, data in results.items() %}
-      <tr>
-        <td>{{ good }}</td>
-        {% for price in data.prices %}
-        <td>{% if price is none %}N/A{% else %}{{ price }}{% endif %}</td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </table>
+<h2>Agent Stats</h2>
+<table class="hover sortable">
+  <tr>
+    <th>Name</th>
+    <th>Job</th>
+    <th>Money</th>
+    <th>Total Profit</th>
+  </tr>
+  {% for agent in agents %}
+  <tr>
+    <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
+    <td>{{ agent.job }}</td>
+    <td>{{ agent.money }}</td>
+    <td>{{ agent.profit }}</td>
+  </tr>
+  {% endfor %}
+</table>
 
-    <h2>Agent Stats</h2>
-    <table class="hover sortable">
-      <tr>
-        <th>Name</th>
-        <th>Job</th>
-        <th>Money</th>
-        <th>Total Profit</th>
-      </tr>
-      {% for agent in agents %}
+<h2>Agent Trade Stats</h2>
+<table class="hover sortable">
+  <tr>
+    <th>Name</th>
+    <th>Good</th>
+    <th>Bought</th>
+    <th>Sold</th>
+  </tr>
+  {% for agent in agents %}
+    {% if agent.trades %}
+      {% for good, data in agent.trades.items() %}
       <tr>
         <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
-        <td>{{ agent.job }}</td>
-        <td>{{ agent.money }}</td>
-        <td>{{ agent.profit }}</td>
+        <td>{{ good }}</td>
+        <td>{{ data.bought }}</td>
+        <td>{{ data.sold }}</td>
       </tr>
       {% endfor %}
-    </table>
-
-    <h2>Agent Trade Stats</h2>
-    <table class="hover sortable">
+    {% else %}
       <tr>
-        <th>Name</th>
-        <th>Good</th>
-        <th>Bought</th>
-        <th>Sold</th>
+        <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
+        <td colspan="3">No trades</td>
       </tr>
-      {% for agent in agents %}
-        {% if agent.trades %}
-          {% for good, data in agent.trades.items() %}
-          <tr>
-            <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
-            <td>{{ good }}</td>
-            <td>{{ data.bought }}</td>
-            <td>{{ data.sold }}</td>
-          </tr>
-          {% endfor %}
-        {% else %}
-          <tr>
-            <td><a href="/agent/{{ agent.name|urlencode }}">{{ agent.name }}</a></td>
-            <td colspan="3">No trades</td>
-          </tr>
-        {% endif %}
-      {% endfor %}
-    </table>
-    <h2>Simulation Controls</h2>
-    <form action="/step" method="post">
-      <label for="cont_days">Days to Step:</label>
-      <input type="number" id="cont_days" name="days" value="1" min="1" class="input-number">
-      <input type="submit" value="Step" class="button">
-    </form>
-    <form action="/reset" method="post">
-      <input type="submit" value="Reset" class="button alert">
-    </form>
-    <form action="/rebuild" method="post">
-      <label for="rb_agents">Agents:</label>
-      <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
-      <input type="submit" value="Rebuild DB" class="button warning">
-    </form>
-    <p><a href="/">Run another simulation</a> | <a href="/overview">Market Overview</a></p>
-    <script>
-      const results = {{ results|tojson }};
-      const days = {{ days }};
-      const labels = Array.from({length: days}, (_, i) => i + 1);
-      let idx = 1;
-      for (const [good, data] of Object.entries(results)) {
-        Plotly.newPlot(
-          `priceChart-${idx}`,
-          [{ x: labels, y: data.prices, mode: 'lines+markers', name: `${good} Price` }],
-          { title: `${good} Price`, xaxis: { title: 'Day' }, yaxis: { title: 'Price' }, margin: { t: 30 } }
-        );
-        Plotly.newPlot(
-          `volumeChart-${idx}`,
-          [{ x: labels, y: data.volumes, type: 'bar', name: `${good} Volume` }],
-          { title: `${good} Volume`, xaxis: { title: 'Day' }, yaxis: { title: 'Volume' }, margin: { t: 30 } }
-        );
-        idx++;
-      }
-    </script>
-    <script>
-      document.querySelectorAll('table.sortable th').forEach(header => {
-        header.addEventListener('click', () => {
-          const table = header.closest('table');
-          const column = Array.from(header.parentElement.children).indexOf(header);
-          const asc = header.dataset.sortAsc !== 'true';
-          const rows = Array.from(table.querySelectorAll('tr:nth-child(n+2)'));
-          rows.sort((a, b) => {
-            const aText = a.children[column].textContent.trim();
-            const bText = b.children[column].textContent.trim();
-            const aNum = parseFloat(aText);
-            const bNum = parseFloat(bText);
-            if (!isNaN(aNum) && !isNaN(bNum)) {
-              return aNum - bNum;
-            }
-            return aText.localeCompare(bText);
-          });
-          if (!asc) {
-            rows.reverse();
-          }
-          rows.forEach(row => table.appendChild(row));
-          table.querySelectorAll('th').forEach(th => th.removeAttribute('data-sort-asc'));
-          header.dataset.sortAsc = asc;
-        });
+    {% endif %}
+  {% endfor %}
+</table>
+<h2>Simulation Controls</h2>
+<form action="/step" method="post">
+  <label for="cont_days">Days to Step:</label>
+  <input type="number" id="cont_days" name="days" value="1" min="1" class="input-number">
+  <input type="submit" value="Step" class="button">
+</form>
+<form action="/reset" method="post">
+  <input type="submit" value="Reset" class="button alert">
+</form>
+<form action="/rebuild" method="post">
+  <label for="rb_agents">Agents:</label>
+  <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
+  <input type="submit" value="Rebuild DB" class="button warning">
+</form>
+<p><a href="/">Run another simulation</a> | <a href="/overview">Market Overview</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const results = {{ results|tojson }};
+  const days = {{ days }};
+  const labels = Array.from({length: days}, (_, i) => i + 1);
+  let idx = 1;
+  for (const [good, data] of Object.entries(results)) {
+    Plotly.newPlot(
+      `priceChart-${idx}`,
+      [{ x: labels, y: data.prices, mode: 'lines+markers', name: `${good} Price` }],
+      { title: `${good} Price`, xaxis: { title: 'Day' }, yaxis: { title: 'Price' }, margin: { t: 30 } }
+    );
+    Plotly.newPlot(
+      `volumeChart-${idx}`,
+      [{ x: labels, y: data.volumes, type: 'bar', name: `${good} Volume` }],
+      { title: `${good} Volume`, xaxis: { title: 'Day' }, yaxis: { title: 'Volume' }, margin: { t: 30 } }
+    );
+    idx++;
+  }
+</script>
+<script>
+  document.querySelectorAll('table.sortable th').forEach(header => {
+    header.addEventListener('click', () => {
+      const table = header.closest('table');
+      const column = Array.from(header.parentElement.children).indexOf(header);
+      const asc = header.dataset.sortAsc !== 'true';
+      const rows = Array.from(table.querySelectorAll('tr:nth-child(n+2)'));
+      rows.sort((a, b) => {
+        const aText = a.children[column].textContent.trim();
+        const bText = b.children[column].textContent.trim();
+        const aNum = parseFloat(aText);
+        const bNum = parseFloat(bText);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+          return aNum - bNum;
+        }
+        return aText.localeCompare(bText);
       });
-    </script>
-  </body>
-</html>
+      if (!asc) {
+        rows.reverse();
+      }
+      rows.forEach(row => table.appendChild(row));
+      table.querySelectorAll('th').forEach(th => th.removeAttribute('data-sort-asc'));
+      header.dataset.sortAsc = asc;
+    });
+  });
+</script>
+{% endblock %}
