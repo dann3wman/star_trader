@@ -1,51 +1,50 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Star Trader</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
-    <style>
-      body { margin: 2rem; }
-      form label { display: block; margin-top: 0.5rem; }
-      form input[type=number] { width: 100%; max-width: 200px; }
-      hr { margin: 2rem 0; }
-    </style>
-  </head>
-  <body class="grid-container">
-    <h1>Run Simulation</h1>
-    <form method="post">
-      {{ form.hidden_tag() }}
-      <label>{{ form.num_agents.label }} {{ form.num_agents(class="input-number") }}</label>
-      <label>{{ form.days.label }} {{ form.days(class="input-number") }}</label>
-      <label>{{ form.initial_money.label }} {{ form.initial_money(class="input-number") }}</label>
-      <label>{{ form.initial_inv.label }} {{ form.initial_inv(class="input-number") }}</label>
-      {% for field in job_fields %}
-        <label>{{ field.label }} {{ field(class="input-number") }}</label>
-      {% endfor %}
-      {{ form.submit(class="button primary") }}
-    </form>
+{% extends "base.html" %}
 
-    <hr/>
-    <h2>Persistent Simulation</h2>
-    <form action="/step" method="post">
-      <label for="p_days">Days to Step</label>
-      <input type="number" id="p_days" name="days" value="1" min="1" class="input-number">
-      <input type="submit" value="Step" class="button">
-    </form>
-    <form action="/reset" method="post">
-      <label for="p_agents">Agents</label>
-      <input type="number" id="p_agents" name="num_agents" value="9" min="1" class="input-number">
-      <input type="submit" value="Reset" class="button alert">
-    </form>
-    <form action="/rebuild" method="post">
-      <label for="rb_agents">Agents</label>
-      <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
-      <input type="submit" value="Rebuild DB" class="button warning">
-    </form>
-    <form action="/load" method="get">
-      <label for="db">DB File</label>
-      <input type="text" id="db" name="db" value="sim.db">
-      <input type="submit" value="Load" class="button secondary">
-    </form>
-    <p><a href="/overview">View Market Overview</a></p>
-  </body>
-</html>
+{% block title %}Star Trader{% endblock %}
+
+{% block head %}
+<style>
+  form label { display: block; margin-top: 0.5rem; }
+  form input[type=number] { width: 100%; max-width: 200px; }
+  hr { margin: 2rem 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Run Simulation</h1>
+<form method="post">
+  {{ form.hidden_tag() }}
+  <label>{{ form.num_agents.label }} {{ form.num_agents(class="input-number") }}</label>
+  <label>{{ form.days.label }} {{ form.days(class="input-number") }}</label>
+  <label>{{ form.initial_money.label }} {{ form.initial_money(class="input-number") }}</label>
+  <label>{{ form.initial_inv.label }} {{ form.initial_inv(class="input-number") }}</label>
+  {% for field in job_fields %}
+    <label>{{ field.label }} {{ field(class="input-number") }}</label>
+  {% endfor %}
+  {{ form.submit(class="button primary") }}
+</form>
+
+<hr/>
+<h2>Persistent Simulation</h2>
+<form action="/step" method="post">
+  <label for="p_days">Days to Step</label>
+  <input type="number" id="p_days" name="days" value="1" min="1" class="input-number">
+  <input type="submit" value="Step" class="button">
+</form>
+<form action="/reset" method="post">
+  <label for="p_agents">Agents</label>
+  <input type="number" id="p_agents" name="num_agents" value="9" min="1" class="input-number">
+  <input type="submit" value="Reset" class="button alert">
+</form>
+<form action="/rebuild" method="post">
+  <label for="rb_agents">Agents</label>
+  <input type="number" id="rb_agents" name="num_agents" value="9" min="1" class="input-number">
+  <input type="submit" value="Rebuild DB" class="button warning">
+</form>
+<form action="/load" method="get">
+  <label for="db">DB File</label>
+  <input type="text" id="db" name="db" value="sim.db">
+  <input type="submit" value="Load" class="button secondary">
+</form>
+<p><a href="/overview">View Market Overview</a></p>
+{% endblock %}

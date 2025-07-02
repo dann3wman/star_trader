@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{% block title %}Star Trader{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites/dist/css/foundation.min.css">
+    <style>
+      body { margin: 0; }
+      .sidebar { background: #f3f3f3; padding: 1rem; min-height: 100vh; }
+      .sidebar a { display: block; margin-bottom: 0.5rem; }
+      .main-content { padding: 1rem; }
+    </style>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="grid-x">
+      <div class="cell small-12 medium-3 large-2 sidebar">
+        <h3>Star Trader</h3>
+        <nav>
+          <a href="/">Run Simulation</a>
+          <a href="/overview">Market Overview</a>
+        </nav>
+      </div>
+      <div class="cell auto main-content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
