@@ -1,5 +1,7 @@
 from flask import Flask, Blueprint, render_template, request, jsonify
 
+from economy.db import init_app as init_db
+
 from config import DB_PATH, INITIAL_MONEY, INITIAL_INVENTORY
 
 # Ensure the project root is on the Python path when running this module
@@ -254,6 +256,7 @@ def rebuild():
 
 
 app = Flask(__name__)
+init_db(app)
 app.register_blueprint(bp)
 
 if __name__ == "__main__":
