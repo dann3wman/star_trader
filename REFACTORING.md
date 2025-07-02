@@ -28,4 +28,34 @@ The following areas could benefit from a refactor to improve maintainability and
 ## 8. Break up monolithic functions
 - Some functions, such as `Market.simulate`, contain many nested loops and side effects. Breaking them into smaller helper methods would aid comprehension and testing.
 
+## 9. Modularize CLI and GUI
+- The command-line tool in `simulate.py` and the web interface in `gui/app.py` both create and manage `Market` instances. A shared controller module would remove duplication and keep behaviour consistent across interfaces.
+
+## 10. Lazy load name lists
+- `economy/names.py` reads `names.yml` at import time. Loading this data only when names are requested would speed up startup and make it easier to supply alternative name lists.
+
+## 11. Introduce custom exceptions
+- Many error cases raise generic exceptions. Defining domain-specific exception classes would clarify intent and allow callers to handle failures more precisely.
+
+## 12. Consolidate database schema
+- Table definitions in `economy/db.py` sit alongside session helpers. Moving the schema into a dedicated module would separate concerns and simplify future migrations.
+
+## 13. Use dataclasses for market orders
+- `Bid` and `Ask` in `offer.py` manage attributes manually. Converting them to dataclasses would reduce boilerplate and provide built-in representations.
+
+## 14. Replace `namedtuple` in history with a dataclass
+- The `Trades` tuple in `market/history.py` lacks defaults and type hints. A dataclass would be easier to extend and document.
+
+## 15. Use context managers for file operations
+- Some modules open files without `with` statements. Employing context managers ensures files are closed properly even when errors occur.
+
+## 16. Extract repeated YAML parsing logic
+- Loading YAML data is repeated in several places (`goods.py`, `jobs.py`, `names.py`). A helper function would reduce duplication and centralize error handling.
+
+## 17. Improve path handling
+- Paths are built using string concatenation or `os.path.join`. Adopting `pathlib.Path` would improve readability and cross-platform support.
+
+## 18. Encapsulate simulation state
+- `Market` exposes a number of mutable attributes directly. Restricting access through methods or properties would help maintain invariants and enable future concurrency features.
+
 These changes are not required for functionality, but they would make the project easier to maintain and extend.
