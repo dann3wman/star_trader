@@ -19,8 +19,8 @@ The following areas could benefit from a refactor to improve maintainability and
 ## ~~5. Clean database interactions~~
 - ~~Functions in `economy/db.py` manually open and close SQLAlchemy sessions. Using context managers or a dependency injection approach would ensure sessions are closed even if errors occur.~~
 
-## 6. Simplify job and goods loading
-- The `_load_goods` and `_load_jobs` functions perform similar steps for seeding the database from YAML. Extracting common logic or using an ORM abstraction layer could reduce duplication.
+## ~~6. Simplify job and goods loading~~
+- ~~The `_load_goods` and `_load_jobs` functions perform similar steps for seeding the database from YAML. Extracting common logic or using an ORM abstraction layer could reduce duplication.~~
 
 ## ~~7. Improved configuration management~~
 - ~~Configuration like `DB_PATH`, inventory size, and initial money are scattered across modules. Centralizing configuration (for example via environment variables or a configuration file) would make it easier to modify these values and test different scenarios.~~

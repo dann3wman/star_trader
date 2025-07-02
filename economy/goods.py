@@ -1,11 +1,11 @@
-import os
 from dataclasses import dataclass
 from typing import Dict, Iterator, List
 
-import yaml
 from sqlalchemy import select
 
 from . import db
+from .utils import seed_if_empty
+
 
 
 _by_name: Dict[str, "Good"] = {}
@@ -40,14 +40,14 @@ def _load_goods():
     """Load goods from the database, populating tables from YAML if needed."""
     db.Base.metadata.create_all(bind=db.engine, tables=[db.GoodsTable.__table__])
     with db.session_scope() as session:
-        rows = session.execute(select(db.GoodsTable.name, db.GoodsTable.size)).all()
-        if not rows:
-            with open(os.path.join("data", "goods.yml")) as fh:
-                data = yaml.safe_load(fh)
-            objs = [db.GoodsTable(name=g["name"], size=g["size"]) for g in data]
-            session.add_all(objs)
-            session.commit()
-            rows = [(g["name"], g["size"]) for g in data]
+        rows = seed_if_empty(
+            session,
+            select(db.GoodsTable.name, db.GoodsTable.size),
+            "goods.yml",
+            lambda s, data: s.add_all(
+                [db.GoodsTable(name=g["name"], size=g["size"]) for g in data]
+            ),
+        )
 
         for name, size in rows:
             Good(name=name, size=size)
