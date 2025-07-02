@@ -3,6 +3,7 @@ import random
 
 from economy.agent import Agent, dump_agent
 from economy import goods, jobs
+from economy.plugins import load_plugins, agent_for_job
 
 from config import INITIAL_INVENTORY, INITIAL_MONEY, DAILY_TAX
 from economy.market.book import OrderBook
@@ -53,6 +54,9 @@ class Market(object):
         self._lifespans = []
         self._daily_tax = daily_tax
 
+        # Load any external plugins before creating agents
+        load_plugins()
+
         job_list = list(jobs.all())
         if not job_list:
             return
@@ -65,8 +69,9 @@ class Market(object):
                     continue
 
                 for _ in range(int(count)):
+                    agent_cls = agent_for_job(str(recipe))
                     self._agents.append(
-                        Agent(
+                        agent_cls(
                             recipe,
                             self,
                             initial_inv=initial_inv,
@@ -84,8 +89,9 @@ class Market(object):
 
             for recipe in job_list:
                 for _ in range(agents_per_job):
+                    agent_cls = agent_for_job(str(recipe))
                     self._agents.append(
-                        Agent(
+                        agent_cls(
                             recipe,
                             self,
                             initial_inv=initial_inv,
@@ -94,8 +100,9 @@ class Market(object):
                     )
 
             for recipe in job_list[:leftover]:
+                agent_cls = agent_for_job(str(recipe))
                 self._agents.append(
-                    Agent(
+                    agent_cls(
                         recipe,
                         self,
                         initial_inv=initial_inv,
@@ -186,7 +193,8 @@ class Market(object):
         else:
             recipe = random.choice(list(jobs.all()))
 
-        return Agent(recipe, self)
+        agent_cls = agent_for_job(str(recipe))
+        return agent_cls(recipe, self)
 
     def make_charts(self):
         """Generate interactive charts for price and volume using Plotly."""
